@@ -60,7 +60,7 @@ func Signup(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// Login function 
+// Login function
 func Login(c *gin.Context) {
 	// structure the req body
 	var body struct {
@@ -80,7 +80,7 @@ func Login(c *gin.Context) {
 	// Find the user with the email
 	var user models.User
 	database.DB.First(&user, "Email = ?", body.Email)
-	// SELECT * FROM users WHERE id = 'string_primary_key';
+	// SELECT * FROM users WHERE Email = 'string_primary_key';
 	if user.ID == "0" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid email or password",
@@ -122,7 +122,7 @@ func Login(c *gin.Context) {
 		tokenString,     // Cookies JWT value
 		3600*24*30,      // age
 		"",              // path - accessible everywhere
-		"",              // domain - only sent to host 
+		"",              // domain - only sent to host
 		false,           // secure on dev so it works on localhost TODO: set true later
 		true,            // Https only
 	)
@@ -130,4 +130,10 @@ func Login(c *gin.Context) {
 	// Sending success response
 	c.JSON(http.StatusOK, gin.H{})
 
+}
+
+func Validate(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "You are authorized to access!",
+	})
 }

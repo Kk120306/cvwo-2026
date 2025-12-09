@@ -5,6 +5,7 @@ import (
 	"github.com/Kk120306/cvwo-2026/backend/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/Kk120306/cvwo-2026/backend/database"
+	"github.com/Kk120306/cvwo-2026/backend/middleware"
 )
 
 // Loading enviornment variables & Connecting to database
@@ -28,6 +29,7 @@ func main() {
 
 	router.POST("/signup", controllers.Signup)
 	router.POST("/login", controllers.Login)
+	router.GET("/validate", middleware.CheckAuth, controllers.Validate)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
