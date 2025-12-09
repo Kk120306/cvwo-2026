@@ -132,8 +132,12 @@ func Login(c *gin.Context) {
 
 }
 
+// Validate function - sends user data
 func Validate(c *gin.Context) {
+	// Retriving user from middleware 
+	user, _ := c.Get("user")
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "You are authorized to access!",
+		"user": user,
 	})
 }
