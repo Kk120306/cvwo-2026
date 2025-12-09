@@ -1,4 +1,4 @@
-package helpers
+package database
 
 import (
 	"github.com/Kk120306/cvwo-2026/backend/models"

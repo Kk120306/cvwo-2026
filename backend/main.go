@@ -4,13 +4,14 @@ import (
 	"github.com/Kk120306/cvwo-2026/backend/controllers"
 	"github.com/Kk120306/cvwo-2026/backend/helpers"
 	"github.com/gin-gonic/gin"
+	"github.com/Kk120306/cvwo-2026/backend/database"
 )
 
 // Loading enviornment variables & Connecting to database
 func init() {
 	helpers.LoadEnvVariables()
-	helpers.ConnectToDb()
-	helpers.PushDb()
+	database.ConnectToDb()
+	database.PushDb()
 }
 
 // CompileDaemon --command="./backend"
@@ -26,6 +27,7 @@ func main() {
 	// })
 
 	router.POST("/signup", controllers.Signup)
+	router.POST("/login", controllers.Login)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }

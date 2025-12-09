@@ -1,10 +1,12 @@
-package helpers
+package database
+
 
 import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
+	"github.com/Kk120306/cvwo-2026/backend/helpers"
 )
 
 var DB *gorm.DB
@@ -13,7 +15,7 @@ var DB *gorm.DB
 // Using PostgreSQL as the database - hosted rn on Neon
 // https://gorm.io/docs/connecting_to_the_database.html
 func ConnectToDb() {
-	LoadEnvVariables()
+	helpers.LoadEnvVariables()
 
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
