@@ -1,6 +1,7 @@
-import './App.css'
 import useAuth from './hooks/useAuth'
 import { Outlet } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 
 function App() {
@@ -12,7 +13,9 @@ function App() {
     if (loading) return <p>Loading...</p>;
     return (
         <div>
+            <Navbar />
             <Outlet />
+            <Footer />
         </div>
     )
 }

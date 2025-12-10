@@ -2,7 +2,7 @@ import App from "./App";
 import ErrorPage from "./components/ErrorPage";
 import TestRedux from "./components/test/TestRedux";
 import AnotherComponent from "./components/test/AnotherComponent";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import SignUp from "./components/authentication/SignUp";
 import DashTest from "./components/test/DashTest";
 import Login from "./components/authentication/Login";
