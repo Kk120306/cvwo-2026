@@ -3,7 +3,12 @@ import ErrorPage from "./components/ErrorPage";
 import TestRedux from "./components/test/TestRedux";
 import AnotherComponent from "./components/test/AnotherComponent";
 import Home from "./components/Home";
+import SignUp from "./components/authentication/SignUp";
+import DashTest from "./components/test/DashTest";
+import Login from "./components/authentication/Login";
 
+
+// Define the routes for the application 
 const routes = [
     {
         path: "/",
@@ -21,6 +26,18 @@ const routes = [
             {
                 path: "test2",
                 element: <TestRedux />,
+            },
+            {
+                path: "signup",
+                element: <SignUp />,
+            },
+            {
+                path : "dashtest",
+                element: <DashTest />,
+            }, 
+            {
+                path : "login",
+                element: <Login />,
             }
         ]
     },

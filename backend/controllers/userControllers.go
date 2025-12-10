@@ -1,15 +1,14 @@
 package controllers
 
 import (
-	"net/http"
-	"os"
-	"time"
-
 	"github.com/Kk120306/cvwo-2026/backend/database"
 	"github.com/Kk120306/cvwo-2026/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"os"
+	"time"
 )
 
 // Sign up function
@@ -127,17 +126,56 @@ func Login(c *gin.Context) {
 		true,            // Https only
 	)
 
-	// Sending success response
-	c.JSON(http.StatusOK, gin.H{})
+	// Sending success response without password for security reasons
+	c.JSON(http.StatusOK, gin.H{
+		"user": gin.H{
+			"id":        user.ID,
+			"username":  user.Username,
+			"email":     user.Email,
+			"avatarURL": user.AvatarURL,
+			"isAdmin":   user.IsAdmin,
+		},
+	})
 
 }
 
-// Validate function - sends user data
+// Validate function - sends user data and checks if token is valid
 func Validate(c *gin.Context) {
-	// Retriving user from middleware 
-	user, _ := c.Get("user")
+	// Retrieve user from middleware
+	u, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
+	// checks to ensure that user type is models.User so it can be refactored for response
+	user, ok := u.(models.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user type"})
+		return
+	}
+	// Return a sanitized user object without password
 	c.JSON(http.StatusOK, gin.H{
-		"user": user,
+		"user": gin.H{
+			"id":        user.ID,
+			"username":  user.Username,
+			"email":     user.Email,
+			"avatarURL": user.AvatarURL,
+			"isAdmin":   user.IsAdmin,
+		},
 	})
+}
+
+// Logout Function - clears the cookie
+func Logout(c *gin.Context) {
+	c.SetCookie(
+		"Authorization", // Cookie name
+		"",              // Cookies JWT value
+		-1,              // age - ensures that the cookie expires immediately
+		"",              // path - accessible everywhere
+		"",              // domain - only sent to host
+		false,           // secure on dev so it works on localhost TODO: set true later
+		true,            // Https only
+	)
+	c.JSON(200, gin.H{"message": "Logged out"})
 }

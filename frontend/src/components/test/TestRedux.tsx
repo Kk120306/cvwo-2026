@@ -6,6 +6,7 @@ import type { RootState } from '../../store';
 import { setUser, logout } from '../../store/slices/authSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { useEffect } from 'react';
+import { logoutAccount } from '../../api/handleAuth';
 
 export default function TestRedux() {
     const user = useAppSelector(state => state.auth.user);
@@ -31,13 +32,16 @@ export default function TestRedux() {
     };
 
     // Simulate logout
-    const handleLogout = () => dispatch(logout());
+    const handleLogout = async () => {
+        dispatch(logout());
+        await logoutAccount();
+    }
 
     return (
         <div style={{ padding: '2rem', border: '2px solid #ccc', maxWidth: '400px', margin: '2rem auto' }}>
             <h2>Redux Test Component</h2>
             <p><strong>Authenticated:</strong> {isAuthenticated ? 'Yes' : 'No'}</p>
-            <p><strong>User:</strong> {user ? user.username : 'None'}</p>
+            <p><strong>User:</strong> {user ? user.email : 'None'}</p>
             <button onClick={handleLogin} style={{ marginRight: '1rem' }}>Login (set user)</button>
             <button onClick={handleLogout}>Logout</button>
         </div>
