@@ -25,7 +25,6 @@ export default function TestRedux() {
         dispatch(setUser({
             id: '1',
             username: 'Kai',
-            email: 'kai@example.com',
             avatarURL: '',
             isAdmin: true,
         }));
@@ -41,7 +40,7 @@ export default function TestRedux() {
         <div style={{ padding: '2rem', border: '2px solid #ccc', maxWidth: '400px', margin: '2rem auto' }}>
             <h2>Redux Test Component</h2>
             <p><strong>Authenticated:</strong> {isAuthenticated ? 'Yes' : 'No'}</p>
-            <p><strong>User:</strong> {user ? user.email : 'None'}</p>
+            <p><strong>User:</strong> {user ? user.username : 'None'}</p>
             <button onClick={handleLogin} style={{ marginRight: '1rem' }}>Login (set user)</button>
             <button onClick={handleLogout}>Logout</button>
         </div>

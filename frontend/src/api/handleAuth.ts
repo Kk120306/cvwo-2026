@@ -1,27 +1,18 @@
 // Typescript prop for Signup args
-interface SignupProps {
+interface AuthProps {
     username: string;
-    email: string;
-    password: string;
 }
-
-// Typescript prop for Login args
-interface LoginProps {
-    email: string;
-    password: string;
-}
-
 
 // Function to handle user signup with the backend API 
 // Calls post /auth/signup endpoint
-export async function signup({ username, email, password }: SignupProps) {
+export async function signup({ username }: AuthProps) {
     const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/signup`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username }),
     })
 
     if (!res.ok) {
@@ -35,14 +26,14 @@ export async function signup({ username, email, password }: SignupProps) {
 // Function to handle user login with the backend API
 // Calls post /auth/login endpoint
 // Since the login returns the user data, we return data in order to set it in redux store 
-export async function login({ email, password }: LoginProps) {
+export async function login({ username }: AuthProps) {
     const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username }),
     });
 
     if (!res.ok) {

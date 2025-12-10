@@ -5,7 +5,7 @@ import (
 	"github.com/Kk120306/cvwo-2026/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"time"
@@ -16,8 +16,6 @@ func Signup(c *gin.Context) {
 	// structure of the request body that we need
 	var body struct {
 		Username string
-		Email    string
-		Password string
 	}
 
 	// if parsing the req to body fails, returns non nil, sends bad request
@@ -28,22 +26,10 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	// Using Bcrypt to hash
-	// checking if there was an error during encryption
-	encryptedPass, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to encrypt password",
-		})
-		return
-	}
-
 	// Creating the User
 	// https://gorm.io/docs/create.html
 	user := models.User{
-		Username:          body.Username,
-		Email:             body.Email,
-		EncryptedPassword: string(encryptedPass),
+		Username: body.Username,
 	}
 	result := database.DB.Create(&user)
 
@@ -63,8 +49,7 @@ func Signup(c *gin.Context) {
 func Login(c *gin.Context) {
 	// structure the req body
 	var body struct {
-		Email    string
-		Password string
+		Username string
 	}
 
 	// compare the parsed input with the structure
@@ -76,26 +61,22 @@ func Login(c *gin.Context) {
 	}
 
 	// https://gorm.io/docs/query.html - refer to inline conditions
-	// Find the user with the email
+	// Find the user with the username
 	var user models.User
-	database.DB.First(&user, "Email = ?", body.Email)
-	// SELECT * FROM users WHERE Email = 'string_primary_key';
-	if user.ID == "0" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid email or password",
+	dbResult := database.DB.First(&user, "Username = ?", body.Username)
+	if dbResult.Error != nil {
+		// https://gorm.io/docs/error_handling.html
+		if dbResult.Error == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Could not find user with that username",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Database error",
 		})
 		return
 	}
-
-	// Comparing password using bcrypt
-	err := bcrypt.CompareHashAndPassword([]byte(user.EncryptedPassword), []byte(body.Password))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid email or password",
-		})
-		return
-	}
-
 	// generating the JWT token
 	// https://pkg.go.dev/github.com/golang-jwt/jwt/v5#example-New-Hmac - Read this for understanding
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -131,7 +112,6 @@ func Login(c *gin.Context) {
 		"user": gin.H{
 			"id":        user.ID,
 			"username":  user.Username,
-			"email":     user.Email,
 			"avatarURL": user.AvatarURL,
 			"isAdmin":   user.IsAdmin,
 		},
@@ -159,7 +139,6 @@ func Validate(c *gin.Context) {
 		"user": gin.H{
 			"id":        user.ID,
 			"username":  user.Username,
-			"email":     user.Email,
 			"avatarURL": user.AvatarURL,
 			"isAdmin":   user.IsAdmin,
 		},

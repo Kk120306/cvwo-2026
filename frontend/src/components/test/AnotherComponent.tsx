@@ -1,7 +1,7 @@
 // Fully generated using Chatgpt Used purpley as a means to test if Redux is working
 // And global state is being maintained. This falls under code review purposes
 // Will be removed for final production build
-import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
+import { useAppSelector } from '../../hooks/reduxHooks';
 import { useEffect } from 'react';
 
 export default function AnotherComponent() {

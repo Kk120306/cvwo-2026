@@ -5,7 +5,6 @@ export function normalizeUser(user: User) {
     return {
         id: user.id,
         username: user.username,
-        email: user.email,
         avatarURL: user.avatarURL,
         isAdmin: user.isAdmin,
     };

@@ -11,8 +11,6 @@ import (
 type User struct {
 	ID                string `gorm:"type:uuid;primaryKey"`
 	Username          string `gorm:"uniqueIndex;not null"`
-	Email             string `gorm:"uniqueIndex"`
-	EncryptedPassword string `gorm:"not null"` // bcrypt hashed
 	AvatarURL         string `gorm:"default:'https://localhost:3000/placeholder.png'"`
 	IsAdmin           bool   `gorm:"default:false"`
 	CreatedAt         time.Time
