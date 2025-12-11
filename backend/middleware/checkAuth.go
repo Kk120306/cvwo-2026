@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Middleware to check if the user is authenticated thorugh cookies with JWT.
 func CheckAuth(c *gin.Context) {
 	// Get the cookie in the request
 	tokenString, err := c.Cookie("Authorization")

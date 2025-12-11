@@ -7,4 +7,5 @@ import (
 // https://gorm.io/docs/index.html -- Migrating the schema
 func PushDb() {
 	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.Topic{})
 }

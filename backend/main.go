@@ -43,6 +43,7 @@ func main() {
 	}))
 
 	routes.AuthRoutes(router)
+	routes.TopicRoutes(router)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
