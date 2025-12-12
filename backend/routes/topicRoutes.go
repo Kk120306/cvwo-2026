@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TopicRoutes sets up the authentication routes
+// TopicRoutes sets up the topic routes
 func TopicRoutes(r *gin.Engine) {
 	topicRouter := r.Group("/topics") // Groups them under /auth
 	{

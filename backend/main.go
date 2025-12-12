@@ -42,8 +42,11 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Setting all the routes 
 	routes.AuthRoutes(router)
 	routes.TopicRoutes(router)
+	routes.PostsRoutes(router)
+	routes.VoteRoutes(router)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
