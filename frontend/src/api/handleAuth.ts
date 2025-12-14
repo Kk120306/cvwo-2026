@@ -1,3 +1,5 @@
+import { toast } from 'react-hot-toast';
+
 // Typescript prop for Signup args
 interface AuthProps {
     username: string;
@@ -17,7 +19,9 @@ export async function signup({ username }: AuthProps) {
 
     if (!res.ok) {
         const err = await res.json();
+        toast.error(err.message || 'Signup failed');
         throw new Error(err.message || 'Signup failed');
+
     }
 
     return true;
@@ -38,10 +42,12 @@ export async function login({ username }: AuthProps) {
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || 'Login failed');
+        toast.error(err.message || 'Login failed');
+        throw new Error(err.message || 'Login failed, Please try again.');
     }
 
     const data = await res.json();
+    toast.success('Login successful!');
 
     return data.user;
 }

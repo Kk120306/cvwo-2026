@@ -1,46 +1,60 @@
-import App from "./App";
-import ErrorPage from "./components/ErrorPage";
-import TestRedux from "./components/test/TestRedux";
-import AnotherComponent from "./components/test/AnotherComponent";
-import Home from "./pages/Home";
-import SignUp from "./components/authentication/SignUp";
-import DashTest from "./components/test/DashTest";
-import Login from "./components/authentication/Login";
+import App from "./App"
+import ErrorPage from "./components/ErrorPage"
+import Home from "./pages/Home"
+import Dashboard from "./pages/Dashboard"
+import PostPage from "./pages/posts/PostPage"
+import CreatePost from "./pages/posts/CreatePostPage"
+import AddTopic from "./pages/topics/AddTopic"
+import Login from "./pages/auth/Login"
+import SignUp from "./pages/auth/SignUp"
 
+// Test Compoenents - Will be removed after development 
+import TestRedux from "./components/test/TestRedux"
+import AnotherComponent from "./components/test/AnotherComponent"
+import DashTest from "./components/test/DashTest"
 
-// Define the routes for the application 
 const routes = [
     {
         path: "/",
         element: <App />,
         errorElement: <ErrorPage />,
         children: [
+            // Home
+            { index: true, element: <Home /> },
+
+            // Auth
+            { path: "login", element: <Login /> },
+            { path: "signup", element: <SignUp /> },
+
+            // Posts - Shows all posts with topics and serach
             {
-                index: true,
-                element: <Home />,
+                path: "posts",
+                children: [
+                    { index: true, element: <Dashboard /> },
+                    { path: "create", element: <CreatePost /> },
+                    { path: ":id", element: <PostPage /> },
+                ],
             },
+
+            // Topics
+            {
+                path: "topics",
+                children: [
+                    { path: "create", element: <AddTopic /> },
+                ],
+            },
+
+            // Testing 
             {
                 path: "test",
-                element: <AnotherComponent />,
+                children: [
+                    { index: true, element: <AnotherComponent /> },
+                    { path: "redux", element: <TestRedux /> },
+                    { path: "dash", element: <DashTest /> },
+                ],
             },
-            {
-                path: "test2",
-                element: <TestRedux />,
-            },
-            {
-                path: "signup",
-                element: <SignUp />,
-            },
-            {
-                path : "dashtest",
-                element: <DashTest />,
-            }, 
-            {
-                path : "login",
-                element: <Login />,
-            }
-        ]
+        ],
     },
 ]
 
-export default routes;
+export default routes

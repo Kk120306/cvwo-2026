@@ -2,6 +2,7 @@ import useAuth from './hooks/useAuth'
 import { Outlet } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ToastProvider from './components/ToastProvider'
 
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
     if (loading) return <p>Loading...</p>;
     return (
         <div>
+            <ToastProvider />
             <Navbar />
             <Outlet />
             <Footer />
