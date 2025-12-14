@@ -12,7 +12,8 @@ func TopicRoutes(r *gin.Engine) {
 	{
 		topicRouter.GET("/", controllers.GetTopics) 
 		// Only admin can create, delete and update topics
-		topicRouter.POST("/create", middleware.CheckAuth, middleware.CheckAdmin, controllers.CreateTopic)
+		// middleware.CheckAuth, middleware.CheckAdmin, add again later - removed for devleopment
+		topicRouter.POST("/create",  controllers.CreateTopic)
 		topicRouter.DELETE("/delete/:slug", middleware.CheckAuth, middleware.CheckAdmin, controllers.DeleteTopic)
 		topicRouter.PUT("/update/:slug", middleware.CheckAuth, middleware.CheckAdmin, controllers.UpdateTopic)
 	}

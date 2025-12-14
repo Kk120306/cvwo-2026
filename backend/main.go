@@ -10,17 +10,18 @@ import (
 	"time"
 )
 
-// Loading enviornment variables & Connecting to database
+// Loading enviornment variables
 func init() {
 	helpers.LoadEnvVariables()
-	database.ConnectToDb()
-	database.PushDb()
 }
 
 // CompileDaemon --command="./backend"
 // setting up gin project - https://gin-gonic.com/en/docs/quickstart/
 func main() {
 	router := gin.Default()
+	database.ConnectToDb()
+	database.PushDb()
+	// database.Seed() Used for seeding 
 
 	// Testing route
 	// router.GET("/ping", func(c *gin.Context) {
@@ -42,7 +43,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// Setting all the routes 
+	// Setting all the routes
 	routes.AuthRoutes(router)
 	routes.TopicRoutes(router)
 	routes.PostsRoutes(router)

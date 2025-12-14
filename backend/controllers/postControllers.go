@@ -1,18 +1,43 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/Kk120306/cvwo-2026/backend/database"
 	"github.com/Kk120306/cvwo-2026/backend/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"net/http"
+	"strings"
 )
+
+// Function to get all posts (across all topics)
+func GetAllPosts(c *gin.Context) {
+	var posts []models.Post
+
+	// Query all posts
+	res := database.DB.
+		Preload("Author").
+		Preload("Topic").
+		Order("is_pinned desc, created_at desc").
+		Find(&posts)
+
+	// Error retrieving from db
+	if res.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve posts",
+		})
+		return
+	}
+
+	// Return all posts
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+	})
+}
 
 // Function to get posts under a topic
 func GetPostsByTopic(c *gin.Context) {
 	// getting the slug of topic through params
-	slug := c.Param("slug")
+	slug := strings.ToLower(c.Param("slug"))
 	if slug == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Please provide a valid topic slug",
@@ -36,6 +61,8 @@ func GetPostsByTopic(c *gin.Context) {
 	var posts []models.Post
 	res := database.DB.
 		Where("topic_id = ?", topic.ID).
+		Preload("Author").
+		Preload("Topic").
 		Order("is_pinned desc, created_at desc"). // First comes for pinned posts and then we go to order of creation date
 		Find(&posts)
 

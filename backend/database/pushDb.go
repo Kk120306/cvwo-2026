@@ -8,4 +8,7 @@ import (
 func PushDb() {
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Topic{})
+	DB.AutoMigrate(&models.Post{})
+	DB.AutoMigrate(&models.Comment{})
+	DB.AutoMigrate(&models.Vote{})
 }

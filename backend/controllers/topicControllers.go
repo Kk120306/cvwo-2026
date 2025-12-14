@@ -13,7 +13,7 @@ import (
 // retrives all topics avaliable sorted by creation date
 func GetTopics(c *gin.Context) {
 	// Create a slice for the topics
-	var topics []string
+	var topics []models.Topic
 
 	// query all the topics from database ordered - appends it to topic slice
 	result := database.DB.Order("created_at desc").Find(&topics)
