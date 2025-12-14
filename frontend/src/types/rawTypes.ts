@@ -21,5 +21,17 @@ export interface RawPost {
     UpdatedAt: string;
     Author: RawUser;
     Topic: RawTopic;
+    Likes: number;
+    Dislikes: number;
+}
+
+
+export interface RawComment {
+    ID: string
+    Content: string
+    CreatedAt: string
+    Likes: number
+    Dislikes: number
+    Author: RawUser
 }
 

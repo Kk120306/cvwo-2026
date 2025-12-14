@@ -23,5 +23,17 @@ export interface Post {
     updatedAt: string;
     author: User;
     topic: Topic;
+    likes: number;
+    dislikes: number;
+}
+
+// Comment type
+export interface Comment {
+    id: string
+    content: string
+    createdAt: string
+    likes: number
+    dislikes: number
+    author: User
 }
 
