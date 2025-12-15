@@ -1,58 +1,89 @@
-import React from 'react';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Paper,
+    Container
+} from '@mui/material';
 
 // Props for the AuthForm component
 interface AuthFormProps {
-    heading: string,
-    buttonLabel: string,
+    heading: string;
+    buttonLabel: string;
     onSubmit: (username: string) => Promise<void>;
     extraLink: React.ReactNode;
 }
 
-// Reusable authentication form component that is used for both login and signup since both only require username
+// Authentication form component that is used for both login and signup since both only require username
 export default function AuthForm({ heading, buttonLabel, onSubmit, extraLink }: AuthFormProps) {
-
-    // State, ensures proper validation messages are shown
-    const [nameError, setNameError] = React.useState(false);
-    const [nameErrorMessage, setNameErrorMessage] = React.useState('');
-
-    // validates inputs and sets error messages if needed
-    const validateInputs = () => {
-        const name = document.getElementById('name') as HTMLInputElement;
-        let isValid = true;
-
-        if (!name.value || name.value.length < 1) {
-            setNameError(true);
-            setNameErrorMessage('Username is required.');
-            isValid = false;
-        } else {
-            setNameError(false);
-            setNameErrorMessage('');
-        }
-
-        return isValid;
-    };
+    const [username, setUsername] = useState('');
 
     // handles form submission 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!validateInputs()) {
-            return;
+        try {
+            await onSubmit(username);
+        } catch {
+            toast.error('Something went wrong');
         }
-        const username = new FormData(event.currentTarget).get('name') as string;
-        await onSubmit(username);
     };
 
     return (
-        <div>
-            <h1>{heading}</h1>
+        <Container maxWidth="sm">
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Paper
+                    elevation={3}
+                    sx={{
+                        padding: 4,
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography component="h1" variant="h4" fontWeight={600} mb={3}>
+                        {heading}
+                    </Typography>
 
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="name">Username</label>
-                <input type="text" id="name" name="name" />
-                {nameError && <p>{nameErrorMessage}</p>}
-                <button type="submit">{buttonLabel}</button>
-                {extraLink}
-            </form>
-        </div>
+                    <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="name"
+                            label="Username"
+                            name="name"
+                            autoComplete="username"
+                            autoFocus
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                        >
+                            {buttonLabel}
+                        </Button>
+
+                        <Box sx={{ textAlign: 'center' }}>
+                            {extraLink}
+                        </Box>
+                    </Box>
+                </Paper>
+            </Box>
+        </Container>
     );
 }
