@@ -21,7 +21,7 @@ func main() {
 	router := gin.Default()
 	database.ConnectToDb()
 	database.PushDb()
-	// database.Seed() Used for seeding 
+	// database.Seed() Used for seeding
 
 	// Testing route
 	// router.GET("/ping", func(c *gin.Context) {
@@ -48,6 +48,7 @@ func main() {
 	routes.TopicRoutes(router)
 	routes.PostsRoutes(router)
 	routes.VoteRoutes(router)
+	routes.CommentRoutes(router)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }

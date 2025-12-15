@@ -10,7 +10,7 @@ import (
 func CommentRoutes(r *gin.Engine) {
 	commentRouter := r.Group("/comments") // Groups them under /comments
 	{
-		commentRouter.GET("/:postId", controllers.GetCommentsByPost)
+		commentRouter.GET("/post/:postId", controllers.GetCommentsByPost)
 		commentRouter.POST("/create/:postId", middleware.CheckAuth, controllers.CreateComment)
 		commentRouter.DELETE("/delete/:id", middleware.CheckAuth, controllers.DeleteComment)
 		commentRouter.PUT("/update/:id", middleware.CheckAuth, controllers.UpdateComment)

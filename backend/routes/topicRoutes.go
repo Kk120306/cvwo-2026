@@ -10,10 +10,9 @@ import (
 func TopicRoutes(r *gin.Engine) {
 	topicRouter := r.Group("/topics") // Groups them under /auth
 	{
-		topicRouter.GET("/", controllers.GetTopics) 
-		// Only admin can create, delete and update topics
-		// middleware.CheckAuth, middleware.CheckAdmin, add again later - removed for devleopment
-		topicRouter.POST("/create",  controllers.CreateTopic)
+		topicRouter.GET("/", controllers.GetTopics)
+		topicRouter.POST("/create", controllers.CreateTopic)
+		// Only admin can update, delete and update topics
 		topicRouter.DELETE("/delete/:slug", middleware.CheckAuth, middleware.CheckAdmin, controllers.DeleteTopic)
 		topicRouter.PUT("/update/:slug", middleware.CheckAuth, middleware.CheckAdmin, controllers.UpdateTopic)
 	}

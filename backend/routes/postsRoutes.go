@@ -10,10 +10,10 @@ import (
 func PostsRoutes(r *gin.Engine) {
 	postsRouter := r.Group("/posts") // Groups them under /posts
 	{
-		postsRouter.GET("//all", controllers.GetAllPosts)
-		postsRouter.GET("/topic/:slug", controllers.GetPostsByTopic)
+		postsRouter.GET("/all", middleware.OptionalAuth, controllers.GetAllPosts)
+		postsRouter.GET("/topic/:slug", middleware.OptionalAuth, controllers.GetPostsByTopic)
+		postsRouter.GET("/id/:id", middleware.OptionalAuth, controllers.GetPost)
 		postsRouter.POST("/create/:slug", middleware.CheckAuth, controllers.CreatePost)
-		postsRouter.GET("/id/:id", controllers.GetPost)
 		postsRouter.DELETE("/delete/:id", middleware.CheckAuth, controllers.DeletePost)
 		postsRouter.PUT("/update/:id", middleware.CheckAuth, controllers.UpdatePost)
 	}
