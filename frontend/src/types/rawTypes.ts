@@ -23,6 +23,7 @@ export interface RawPost {
     Topic: RawTopic;
     Likes: number;
     Dislikes: number;
+    MyVote: "like" | "dislike" | null;
 }
 
 

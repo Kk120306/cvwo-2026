@@ -1,4 +1,5 @@
-// Normalised user type for frontend use
+// Normalised user type for frontend use - used once API data is cleaned
+
 export interface User {
     id: string;
     username: string;
@@ -6,14 +7,14 @@ export interface User {
     isAdmin: boolean;
 }
 
-// Topic type
+
 export interface Topic {
     id: string;
     name: string;
     slug: string;
 }
 
-// Post type
+
 export interface Post {
     id: string;
     title: string;
@@ -25,9 +26,10 @@ export interface Post {
     topic: Topic;
     likes: number;
     dislikes: number;
+    myVote?: "like" | "dislike" | null
 }
 
-// Comment type
+
 export interface Comment {
     id: string
     content: string
