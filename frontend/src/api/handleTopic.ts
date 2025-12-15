@@ -1,4 +1,5 @@
 import { toast } from "react-hot-toast";
+import { normalizeTopics } from "../helpers/normalizer";
 
 // Function to fetch all topics from the API 
 export async function fetchAllTopics() {
@@ -17,8 +18,9 @@ export async function fetchAllTopics() {
 
     // Parse the JSON response
     const data = await res.json();
+    const normalized = normalizeTopics(data.topics || []);
 
-    return data.topics;
+    return normalized;
 }
 
 // Function to create a new topic via the API

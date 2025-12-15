@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { setUser, logout } from '../store/slices/authSlice';
 import { useAppDispatch } from './reduxHooks';
-import { normalizeUser } from '../helpers/normalizeUser';
+import { normalizeUser } from '../helpers/normalizer';
 
 // Function to determine if the user has been authenticated
 // Through the help of cookies passed to backend

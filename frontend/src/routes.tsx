@@ -4,7 +4,7 @@ import Home from "./pages/Home"
 import Dashboard from "./pages/Dashboard"
 import PostPage from "./pages/posts/PostPage"
 import CreatePost from "./pages/posts/CreatePostPage"
-import AddTopic from "./pages/topics/AddTopic"
+import AddTopic from "./pages/topics/CreateTopic"
 import Login from "./pages/auth/Login"
 import SignUp from "./pages/auth/SignUp"
 

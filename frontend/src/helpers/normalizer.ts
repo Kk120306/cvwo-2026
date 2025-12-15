@@ -20,6 +20,7 @@ export function normalizeComment(data: RawComment): Comment {
     }
 }
 
+// Call for an array of comments
 export function normalizeComments(dataArr: RawComment[]): Comment[] {
     return dataArr.map(normalizeComment)
 }
@@ -46,6 +47,7 @@ export function normalizePost(data: RawPost): Post {
         },
         likes: data.Likes,
         dislikes: data.Dislikes,
+        myVote: data.MyVote,
     };
 }
 
@@ -73,6 +75,7 @@ export function normalizeTopic(data: RawTopic): Topic {
     }
 }
 
+// Call for an array of topics
 export function normalizeTopics(dataArr: RawTopic[]): Topic[] {
     return dataArr.map(normalizeTopic)
 }

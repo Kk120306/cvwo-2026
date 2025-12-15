@@ -24,6 +24,7 @@ export async function fetchPostByTopic(topicSlug: string) {
     }
     // Parse the JSON response
     const data = await res.json();
+    console.log(data);
     // Ensures Post type is met 
     const posts = normalizePosts(data.posts || []);
 
