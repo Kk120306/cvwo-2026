@@ -17,6 +17,7 @@ export function normalizeComment(data: RawComment): Comment {
             avatarURL: data.Author.AvatarURL,
             isAdmin: data.Author.IsAdmin,
         },
+        myVote: data.MyVote,
     }
 }
 

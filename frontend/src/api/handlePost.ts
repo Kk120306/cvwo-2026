@@ -1,9 +1,11 @@
 import { normalizePosts } from "../helpers/normalizer";
 import { toast } from "react-hot-toast";
 
+
+const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+
 // function that fetches posts based on topic from api 
 export async function fetchPostByTopic(topicSlug: string) {
-    const baseUrl = import.meta.env.VITE_BACKEND_HOST;
 
     // If all we call a different endpoint 
     const endpoint =
@@ -34,8 +36,6 @@ export async function fetchPostByTopic(topicSlug: string) {
 
 // Function that fetches a post by a specific post Id 
 export async function fetchPostById(postId: string) {
-    const baseUrl = import.meta.env.VITE_BACKEND_HOST;
-
     const endpoint = `${baseUrl}/posts/id/${postId}`;
 
     const res = await fetch(endpoint, {
@@ -59,8 +59,6 @@ export async function fetchPostById(postId: string) {
 
 // funciton that creates a post under a topic which is identified by topicSlug
 export async function createPost(postData: { title: string; content: string, topicSlug: string }) {
-    const baseUrl = import.meta.env.VITE_BACKEND_HOST;
-
     const endpoint = `${baseUrl}/posts/create/${postData.topicSlug}`;
 
     const res = await fetch(endpoint, {
@@ -79,4 +77,48 @@ export async function createPost(postData: { title: string; content: string, top
 
     toast.success("Post created successfully");
     return true;
+}
+
+// function that deletes a post by post Id
+export async function deletePost(postId: string) {
+    const endpoint = `${baseUrl}/posts/delete/${postId}`;
+
+    const res = await fetch(endpoint, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        toast.error("Failed to delete post");
+        throw new Error("Failed to delete post");
+    }
+
+    toast.success("Post deleted successfully");
+    return true;
+}
+
+// function that updates a post by post Id
+export async function updatePost(postId: string, title: string, content: string) {
+    const endpoint = `${baseUrl}/posts/update/${postId}`;
+
+    const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ title, content }),
+    });
+
+    if (!res.ok) {
+        toast.error("Failed to update post");
+        throw new Error("Failed to update post");
+    }
+
+    const data = await res.json();
+    toast.success("Post updated successfully");
+    return data.post;
 }

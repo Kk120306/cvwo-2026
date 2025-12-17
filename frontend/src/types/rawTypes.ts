@@ -34,5 +34,6 @@ export interface RawComment {
     Likes: number
     Dislikes: number
     Author: RawUser
+    MyVote: "like" | "dislike" | null;
 }
 

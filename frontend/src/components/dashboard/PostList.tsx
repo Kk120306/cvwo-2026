@@ -11,7 +11,7 @@ import {
     FormControl,
     InputLabel,
 } from "@mui/material"
-import { fetchPostByTopic } from "../../api/handlePost"
+import { deletePost, fetchPostByTopic } from "../../api/handlePost"
 import type { Post } from "../../types/globalTypes"
 import { useNavigate } from "react-router-dom"
 import { votePost } from "../../api/handleVote"
@@ -109,6 +109,20 @@ export default function PostList({ topic }: PostListProps) {
                     : post
             )
         )
+    }
+
+    // Function that deletes a post 
+    const handleDelete = async (postId: string) => {
+        try {
+            const confirmed = window.confirm("Are you sure you want to delete this post? This will delete all comments under it.")
+            if (!confirmed) return
+
+            await deletePost(postId)
+            // Sets the new posts state so that it dosent contain the deleted post
+            setPosts(prev => prev.filter(post => post.id !== postId))
+        } catch {
+            alert("Failed to delete post")
+        }
     }
 
     if (loading) return <Typography>Loading posts...</Typography>
@@ -211,6 +225,20 @@ export default function PostList({ topic }: PostListProps) {
                                 >
                                     {post.dislikes}
                                 </Typography>
+                            </Box>
+                            <Box>
+                                {(user?.isAdmin || post.author.id === user?.id) && (
+                                    <Typography
+                                        variant="caption"
+                                        color="error"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDelete(post.id)
+                                        }}
+                                    >
+                                        Delete Post
+                                    </Typography>
+                                )}
                             </Box>
 
                         </CardContent>

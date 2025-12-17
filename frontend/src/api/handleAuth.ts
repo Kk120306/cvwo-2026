@@ -5,10 +5,14 @@ interface AuthProps {
     username: string;
 }
 
+const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+
 // Function to handle user signup with the backend API 
 // Calls post /auth/signup endpoint
 export async function signup({ username }: AuthProps) {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/signup`, {
+    const endPoint = `${baseUrl}/auth/signup`;
+
+    const res = await fetch(endPoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -31,7 +35,8 @@ export async function signup({ username }: AuthProps) {
 // Calls post /auth/login endpoint
 // Since the login returns the user data, we return data in order to set it in redux store 
 export async function login({ username }: AuthProps) {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/login`, {
+    const endPoint = `${baseUrl}/auth/login`;
+    const res = await fetch(endPoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -57,7 +62,8 @@ export async function login({ username }: AuthProps) {
 // Calls post /auth/logout endpoint
 // Calls to clear the cookie session
 export async function logoutAccount() {
-    await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/logout`, {
+    const endPoint = `${baseUrl}/auth/logout`;
+    await fetch(endPoint, {
         method: 'POST',
         credentials: 'include',
     });

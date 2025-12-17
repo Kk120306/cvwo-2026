@@ -1,9 +1,13 @@
 import { toast } from "react-hot-toast";
 import { normalizeTopics } from "../helpers/normalizer";
 
+const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+
 // Function to fetch all topics from the API 
 export async function fetchAllTopics() {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/topics/`, {
+    const endPoint = `${baseUrl}/topics/`;
+
+    const res = await fetch(endPoint, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -25,7 +29,9 @@ export async function fetchAllTopics() {
 
 // Function to create a new topic via the API
 export const createTopic = async (name: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/topics/create`, {
+    const endPoint = `${baseUrl}/topics/create`;
+
+    const res = await fetch(endPoint, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

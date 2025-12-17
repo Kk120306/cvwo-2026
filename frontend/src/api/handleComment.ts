@@ -1,9 +1,10 @@
 import { normalizeComments } from "../helpers/normalizer"
 import { toast } from "react-hot-toast"
 
+const baseUrl = import.meta.env.VITE_BACKEND_HOST
+
 // function to get all comments under a post with postId
 export async function getPostComment(postId: string) {
-    const baseUrl = import.meta.env.VITE_BACKEND_HOST
     const endpoint = `${baseUrl}/comments/post/${postId}`
 
     const res = await fetch(endpoint, {
@@ -19,13 +20,13 @@ export async function getPostComment(postId: string) {
     }
 
     const data = await res.json()
+    console.log(data);
     return normalizeComments(data.comments || [])
 }
 
 
 // function that creates a comment under a postID
 export async function createComment(postId: string, content: string) {
-    const baseUrl = import.meta.env.VITE_BACKEND_HOST
     const endpoint = `${baseUrl}/comments/create/${postId}`
 
     const res = await fetch(endpoint, {
@@ -36,6 +37,7 @@ export async function createComment(postId: string, content: string) {
         credentials: "include",
         body: JSON.stringify({ content }),
     })
+    console.log(res);
 
     if (!res.ok) {
         toast.error("Failed to create comment")
@@ -43,5 +45,54 @@ export async function createComment(postId: string, content: string) {
     }
 
     toast.success("Comment created successfully")
-    return await res.json()
+    const data = await res.json()
+    console.log(data)
+    return data;
+}
+
+
+// function that deletes a comment by commentId
+export async function deleteComment(commentId: string) {
+    const endpoint = `${baseUrl}/comments/delete/${commentId}`
+
+    const res = await fetch(endpoint, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    })
+
+    if (!res.ok) {
+        toast.error("Failed to delete comment")
+        throw new Error("Failed to delete comment")
+    }
+
+    toast.success("Comment deleted successfully")
+}
+
+
+
+// function that updates a comment by commentId
+export async function updateComment(commentId: string, content: string) {
+    const endpoint = `${baseUrl}/comments/update/${commentId}`
+
+    const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ content }),
+    })
+
+    if (!res.ok) {
+        toast.error("Failed to update comment")
+        throw new Error("Failed to update comment")
+    }
+
+    toast.success("Comment updated successfully")
+    const data = await res.json()
+    return data
+
 }

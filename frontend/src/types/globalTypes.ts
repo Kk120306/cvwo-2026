@@ -37,5 +37,6 @@ export interface Comment {
     likes: number
     dislikes: number
     author: User
+    myVote?: "like" | "dislike" | null
 }
 

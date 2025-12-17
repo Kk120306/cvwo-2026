@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import { Box, Button } from '@mui/material'
+import { useEffect } from 'react'
 
 // Props for content and how the change in content is handled 
 interface RichTextEditorProps {
@@ -19,6 +20,13 @@ const RichTextEditor = ({ content = '', onChange }: RichTextEditorProps) => {
             onChange(editor.getHTML()) // get HTML to save to backend
         },
     })
+
+    // If content prop changes from data passed down and not thorugh editor content, we update the new content in the editor 
+    useEffect(() => {
+        if (editor && content !== editor.getHTML()) {
+            editor.commands.setContent(content)
+        }
+    }, [content, editor])
 
     if (!editor) return null
 
