@@ -20,6 +20,9 @@ type Comment struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	// Deletes any related field with cascade 
+	Votes []Vote `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE"`
 }
 
 func (c *Comment) BeforeCreate(tx *gorm.DB) (err error) {

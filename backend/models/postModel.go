@@ -9,16 +9,20 @@ import (
 // https://gorm.io/docs/models.html
 // Read here for what Gorm Model provides
 type Post struct {
-	ID           string    `gorm:"type:uuid;primaryKey"`
-	TopicID      string    `gorm:"type:uuid;not null"`
-	AuthorID     string    `gorm:"type:uuid;not null"`
-	Topic        Topic     `gorm:"foreignKey:TopicID"`
-	Author       User      `gorm:"foreignKey:AuthorID"`
-	Title        string    `gorm:"type:varchar(255);not null"`
-	Content      string    `gorm:"type:text;not null"`
-	IsPinned     bool      `gorm:"default:false"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID        string    `gorm:"type:uuid;primaryKey"`
+	TopicID   string    `gorm:"type:uuid;not null"`
+	AuthorID  string    `gorm:"type:uuid;not null"`
+	Topic     Topic     `gorm:"foreignKey:TopicID"`
+	Author    User      `gorm:"foreignKey:AuthorID"`
+	Title     string    `gorm:"type:varchar(255);not null"`
+	Content   string    `gorm:"type:text;not null"`
+	IsPinned  bool      `gorm:"default:false"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Deletes any related field with cascade 
+	Comments []Comment `gorm:"foreignKey:PostID;constraint:OnDelete:CASCADE"`
+	Votes    []Vote    `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE"`
 }
 
 // https://gorm.io/docs/hooks.html

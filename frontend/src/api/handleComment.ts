@@ -1,4 +1,4 @@
-import { normalizeComments } from "../helpers/normalizer"
+import { normalizeComments, normalizeComment } from "../helpers/normalizer"
 import { toast } from "react-hot-toast"
 
 const baseUrl = import.meta.env.VITE_BACKEND_HOST
@@ -46,7 +46,6 @@ export async function createComment(postId: string, content: string) {
 
     toast.success("Comment created successfully")
     const data = await res.json()
-    console.log(data)
     return data;
 }
 
