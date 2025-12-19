@@ -17,7 +17,6 @@ type Comment struct {
 
 	Content  string `gorm:"type:text;not null"`
 	IsPinned bool   `gorm:"default:false"`
-	ImageUrl *string `gorm:"type:text"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
