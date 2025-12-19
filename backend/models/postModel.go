@@ -19,8 +19,9 @@ type Post struct {
 	IsPinned  bool      `gorm:"default:false"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	ImageUrl  *string    `gorm:"type:text"`
 
-	// Deletes any related field with cascade 
+	// Deletes any related field with cascade
 	Comments []Comment `gorm:"foreignKey:PostID;constraint:OnDelete:CASCADE"`
 	Votes    []Vote    `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE"`
 }

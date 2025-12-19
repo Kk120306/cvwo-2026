@@ -130,7 +130,8 @@ func CreateComment(c *gin.Context) {
 	}
 
 	var body struct {
-		Content string
+		Content  string
+		ImageUrl *string
 	}
 
 	err := c.ShouldBindJSON(&body)
@@ -154,6 +155,7 @@ func CreateComment(c *gin.Context) {
 		PostID:   postID,
 		AuthorID: user.ID,
 		Content:  safeContent,
+		ImageUrl: body.ImageUrl,
 	}
 
 	// Insert into DB
@@ -175,8 +177,9 @@ func CreateComment(c *gin.Context) {
 	response := gin.H{
 		"comment": gin.H{
 			"id":        comment.ID,
-			"postId":    comment.PostID,   
-			"authorId":  comment.AuthorID, 
+			"postId":    comment.PostID,
+			"authorId":  comment.AuthorID,
+			"imageUrl":  comment.ImageUrl,
 			"content":   comment.Content,
 			"createdAt": comment.CreatedAt,
 			"updatedAt": comment.UpdatedAt,
@@ -238,7 +241,8 @@ func UpdateComment(c *gin.Context) {
 
 	// Parse body
 	var body struct {
-		Content string
+		Content  string
+		ImageURL *string
 	}
 
 	// check body
@@ -248,9 +252,18 @@ func UpdateComment(c *gin.Context) {
 		})
 		return
 	}
+	// updates map
+	updates := map[string]interface{}{
+		"content": body.Content,
+	}
 
-	// Update the content
-	save := database.DB.Model(&comment).Update("content", body.Content)
+	// Add ImageURL to updates if provided
+	if body.ImageURL != nil {
+		updates["image_url"] = *body.ImageURL
+	}
+
+	// Update the comment with all fields
+	save := database.DB.Model(&comment).Updates(updates)
 	if save.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to update comment",

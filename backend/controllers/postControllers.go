@@ -177,6 +177,7 @@ func CreatePost(c *gin.Context) {
 	var body struct {
 		Title   string
 		Content string
+		ImageUrl *string
 	}
 
 	// check if parsing req binds with struct
@@ -212,6 +213,7 @@ func CreatePost(c *gin.Context) {
 		Content:  safeContent,
 		TopicID:  topic.ID,
 		AuthorID: user.ID,
+		ImageUrl: body.ImageUrl,
 	}
 
 	// Save to database
@@ -391,8 +393,9 @@ func UpdatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title   string `json:"title" binding:"required"`
-		Content string `json:"content" binding:"required"`
+		Title   string 
+		Content string 
+		ImageURL *string
 	}
 
 	// Check if parsing req binds with struct
@@ -438,6 +441,7 @@ func UpdatePost(c *gin.Context) {
 	updateErr := database.DB.Model(&post).Updates(models.Post{
 		Title:   body.Title,
 		Content: body.Content,
+		ImageUrl: body.ImageURL,
 	}).Error
 	if updateErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post"})

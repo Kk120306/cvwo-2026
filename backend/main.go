@@ -49,6 +49,7 @@ func main() {
 	routes.PostsRoutes(router)
 	routes.VoteRoutes(router)
 	routes.CommentRoutes(router)
+	routes.ImageRoutes(router)
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }

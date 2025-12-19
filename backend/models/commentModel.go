@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Consider adding nesting later on 
+// Consider adding nesting later on
 type Comment struct {
 	ID       string `gorm:"type:uuid;primaryKey"`
 	PostID   string `gorm:"type:uuid;not null"`
@@ -17,11 +17,12 @@ type Comment struct {
 
 	Content  string `gorm:"type:text;not null"`
 	IsPinned bool   `gorm:"default:false"`
+	ImageUrl *string `gorm:"type:text"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	// Deletes any related field with cascade 
+	// Deletes any related field with cascade
 	Votes []Vote `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE"`
 }
 
