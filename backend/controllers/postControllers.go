@@ -175,8 +175,8 @@ func CreatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title   string
-		Content string
+		Title    string
+		Content  string
 		ImageUrl *string
 	}
 
@@ -393,9 +393,9 @@ func UpdatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title   string 
-		Content string 
-		ImageURL *string
+		Title    string  
+		Content  string  
+		ImageURL *string 
 	}
 
 	// Check if parsing req binds with struct
@@ -437,12 +437,21 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
-	// Update fields
-	updateErr := database.DB.Model(&post).Updates(models.Post{
-		Title:   body.Title,
-		Content: body.Content,
-		ImageUrl: body.ImageURL,
-	}).Error
+	// Update fields - Use map to allow nil values
+	updates := map[string]interface{}{
+		"title":   body.Title,
+		"content": body.Content,
+	}
+
+	// Handle ImageURL separately to allow setting it to null
+	if body.ImageURL != nil {
+		updates["image_url"] = *body.ImageURL
+	} else {
+		// Explicitly set to null if imageUrl is null 
+		updates["image_url"] = nil
+	}
+
+	updateErr := database.DB.Model(&post).Updates(updates).Error
 	if updateErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post"})
 		return
