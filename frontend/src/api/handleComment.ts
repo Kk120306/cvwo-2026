@@ -1,4 +1,4 @@
-import { normalizeComments, normalizeComment } from "../helpers/normalizer"
+import { normalizeComments } from "../helpers/normalizer"
 import { toast } from "react-hot-toast"
 
 const baseUrl = import.meta.env.VITE_BACKEND_HOST
@@ -26,8 +26,8 @@ export async function getPostComment(postId: string) {
 
 
 // function that creates a comment under a postID
-export async function createComment(postId: string, content: string) {
-    const endpoint = `${baseUrl}/comments/create/${postId}`
+export async function createComment(commentData: { postId: string, newComment: string}) {
+    const endpoint = `${baseUrl}/comments/create/${commentData.postId}`
 
     const res = await fetch(endpoint, {
         method: "POST",
@@ -35,7 +35,7 @@ export async function createComment(postId: string, content: string) {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ commentData }),
     })
     console.log(res);
 
@@ -73,8 +73,8 @@ export async function deleteComment(commentId: string) {
 
 
 // function that updates a comment by commentId
-export async function updateComment(commentId: string, content: string) {
-    const endpoint = `${baseUrl}/comments/update/${commentId}`
+export async function updateComment(commentData: { commentId: string, content: string}) {
+    const endpoint = `${baseUrl}/comments/update/${commentData.commentId}`
 
     const res = await fetch(endpoint, {
         method: "PUT",
@@ -82,7 +82,7 @@ export async function updateComment(commentId: string, content: string) {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ commentData }),
     })
 
     if (!res.ok) {

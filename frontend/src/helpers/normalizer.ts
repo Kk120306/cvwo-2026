@@ -49,6 +49,7 @@ export function normalizePost(data: RawPost): Post {
         likes: data.Likes,
         dislikes: data.Dislikes,
         myVote: data.MyVote,
+        imageUrl: data.ImageUrl,
     };
 }
 

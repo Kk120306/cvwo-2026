@@ -7,6 +7,8 @@ import type { Topic } from '../../types/globalTypes'
 import { fetchAllTopics } from "../../api/handleTopic"
 import { useAppSelector } from '../../hooks/reduxHooks'
 import { toast } from "react-hot-toast";
+import ImageForm from '../../components/image/ImageForm'
+import { getS3Url, uploadFileToS3 } from '../../api/handleImage'
 
 // Page for users to create a new post
 const CreatePostPage = () => {
@@ -15,6 +17,9 @@ const CreatePostPage = () => {
     const [content, setContent] = useState('')
     const [topics, setTopics] = useState<Topic[]>([])
     const [selectedTopic, setSelectedTopic] = useState<string>('')
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
+
     const navigate = useNavigate()
 
     // If the user is not found in state, redirects them to signup
@@ -40,11 +45,22 @@ const CreatePostPage = () => {
 
     // handles the submission of the post
     const handleSubmit = async () => {
-        if (!title || !content || !selectedTopic){
+        if (!title || !content || !selectedTopic) {
             toast.error('Please fill in all fields');
             return;
         }
-        await createPost({ title, content, topicSlug: selectedTopic })
+
+        let imageUrl = null;
+        // If there is an image we upload the image and then save the uploaded Url as the image Url 
+        if (imageFile) {
+            const signedUrl = await getS3Url()
+            const uploadedUrl = await uploadFileToS3(signedUrl, imageFile)
+            if (uploadedUrl) {
+                imageUrl = uploadedUrl
+            }
+        }
+
+        await createPost({ title, content, topicSlug: selectedTopic, imageUrl });
         navigate(-1)
     }
 
@@ -85,6 +101,14 @@ const CreatePostPage = () => {
             </FormControl>
 
             <RichTextEditor content={content} onChange={setContent} />
+
+            {/* Component that handles image uploads and preview */}
+            <ImageForm
+                imageFile={imageFile}
+                setImageFile={setImageFile}
+                imagePreview={imagePreview}
+                setImagePreview={setImagePreview}
+            />
 
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
                 Submit

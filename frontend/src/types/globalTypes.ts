@@ -27,6 +27,7 @@ export interface Post {
     likes: number;
     dislikes: number;
     myVote?: "like" | "dislike" | null
+    imageUrl: string | null
 }
 
 

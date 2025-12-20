@@ -10,14 +10,17 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
+    Tooltip,
 } from "@mui/material"
-import { deletePost, fetchPostByTopic } from "../../api/handlePost"
+import { fetchPostByTopic } from "../../api/handlePost"
 import type { Post } from "../../types/globalTypes"
 import { useNavigate } from "react-router-dom"
 import { votePost } from "../../api/handleVote"
 import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 import { useAppSelector } from "../../hooks/reduxHooks";
+import { sharePost } from "../../helpers/share"
+import ShareIcon from '@mui/icons-material/Share';
 
 // Props for PostList component
 interface PostListProps {
@@ -111,19 +114,6 @@ export default function PostList({ topic }: PostListProps) {
         )
     }
 
-    // Function that deletes a post 
-    const handleDelete = async (postId: string) => {
-        try {
-            const confirmed = window.confirm("Are you sure you want to delete this post? This will delete all comments under it.")
-            if (!confirmed) return
-
-            await deletePost(postId)
-            // Sets the new posts state so that it dosent contain the deleted post
-            setPosts(prev => prev.filter(post => post.id !== postId))
-        } catch {
-            alert("Failed to delete post")
-        }
-    }
 
     if (loading) return <Typography>Loading posts...</Typography>
     if (error) return <Typography color="error">{error}</Typography>
@@ -166,6 +156,17 @@ export default function PostList({ topic }: PostListProps) {
                             <Typography variant="caption" color="text.secondary">
                                 {post.isPinned ? "📌 Pinned by Admin" : ""}
                             </Typography>
+                            <Box>
+                                {post.imageUrl && (
+                                    <Box mb={1}>
+                                        <img
+                                            src={post.imageUrl}
+                                            alt="Post Image"
+                                            style={{ maxWidth: '100%', borderRadius: 8 }}
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
                             <Typography variant="h6">
                                 {post.title}
                             </Typography>
@@ -176,6 +177,17 @@ export default function PostList({ topic }: PostListProps) {
                             >
                                 {post.topic.name} • by {post.author.username}
                             </Typography>
+                            <Tooltip title="Share">
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        sharePost(post.id, post.title)
+                                    }}
+                                    size="small"
+                                >
+                                    <ShareIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
 
                             <Typography
                                 variant="body2"
@@ -226,21 +238,6 @@ export default function PostList({ topic }: PostListProps) {
                                     {post.dislikes}
                                 </Typography>
                             </Box>
-                            <Box>
-                                {(user?.isAdmin || post.author.id === user?.id) && (
-                                    <Typography
-                                        variant="caption"
-                                        color="error"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleDelete(post.id)
-                                        }}
-                                    >
-                                        Delete Post
-                                    </Typography>
-                                )}
-                            </Box>
-
                         </CardContent>
                     </Card>
                 ))

@@ -7,6 +7,7 @@ import {
     CardContent,
     Button,
     IconButton,
+    Tooltip,
 } from "@mui/material"
 import ThumbUpAltOutlinedIcon from "@mui/icons-material/ThumbUpAltOutlined"
 import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined"
@@ -18,10 +19,14 @@ import CommentList from "../../components/comments/CommentList"
 import { useAppSelector } from "../../hooks/reduxHooks"
 import type { Post, Comment } from "../../types/globalTypes"
 import UpdatePost from "../../components/post/PostUpdate"
+import ShareIcon from '@mui/icons-material/Share';
+import { sharePost } from "../../helpers/share"
+import { deleteImage } from "../../api/handleImage"
+
 
 // Page that shows a specific post and its comments 
 const PostPage = () => {
-    const { id } = useParams<{ id: string }>() // gets post Id from url
+    const { id: postId } = useParams<{ id: string }>() // gets post Id from url
 
     const [post, setPost] = useState<Post | null>(null)
     const [comments, setComments] = useState<Comment[]>([])
@@ -37,12 +42,12 @@ const PostPage = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                if (!id) throw new Error("Invalid post ID")
+                if (!postId) throw new Error("Invalid post ID")
                 setLoading(true)
                 setError("")
 
-                const postRes = await fetchPostById(id)
-                const commentRes = await getPostComment(id)
+                const postRes = await fetchPostById(postId)
+                const commentRes = await getPostComment(postId)
 
                 // since postRes returns an object get the post property 
                 setPost(postRes.post)
@@ -54,7 +59,7 @@ const PostPage = () => {
             }
         }
         loadData()
-    }, [id])
+    }, [postId])
 
     // Function that handles post voting
     const handleVote = async (type: "like" | "dislike") => {
@@ -81,22 +86,29 @@ const PostPage = () => {
         try {
             const confirmed = window.confirm("Are you sure you want to delete this post? This will delete all comments under it.")
             if (!confirmed) return
+            setLoading(true)
 
             await deletePost(postId)
+            // If the post has an image, delete from bucket
+            if (post?.imageUrl) {
+                await deleteImage(post.imageUrl);
+            }
             navigate(-1)
         } catch {
             console.error("Failed to delete post")
+        } finally {
+            setLoading(false)   
         }
     }
 
     // Function that handles adding a new comment 
     const handleAddComment = async () => {
         // if there is no id or comment is empty
-        if (!id || !newComment.trim()) return
+        if (!postId || !newComment.trim()) return
 
         try {
             setSubmitting(true)
-            const created = await createComment(id, newComment)
+            const created = await createComment({ postId, newComment })
             setNewComment("<p></p>")
             setComments(prev => [created.comment, ...prev])
         } catch {
@@ -137,13 +149,13 @@ const PostPage = () => {
         )
     }
 
+    // Different rendering conditions 
     if (loading) return <Typography>Loading...</Typography>
     if (error) return <Typography color="error">{error}</Typography>
     if (!post) return <Typography>No post found</Typography>
 
     return (
         <Box mt={4} display="flex" flexDirection="column" alignItems="center">
-            {/* Post */}
             <Card sx={{ width: "100%", maxWidth: 700 }}>
                 <CardContent>
                     <Typography variant="h4" fontWeight={600} gutterBottom>
@@ -153,6 +165,34 @@ const PostPage = () => {
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         {post.topic?.name || "Unknown Topic"} • by {post.author?.username || "Unknown User"}
                     </Typography>
+
+                    {/* Share button */}
+                    <Tooltip title="Share">
+                        <IconButton
+                            onClick={() => sharePost(post.id, post.title)}
+                            size="small"
+                        >
+                            <ShareIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+
+                    {/* Will display the image directly from CDN if post has a image */}
+                    <Box>
+                        {post.imageUrl && (
+                            <Box
+                                component="img"
+                                src={post.imageUrl}
+                                alt="Post Image"
+                                sx={{
+                                    width: "100%",
+                                    maxHeight: 400,
+                                    objectFit: "cover",
+                                    borderRadius: 2,
+                                    my: 2,
+                                }}
+                            />
+                        )}
+                    </Box>
 
                     <Typography
                         variant="body1"
@@ -217,6 +257,7 @@ const PostPage = () => {
                                         postId={post.id}
                                         initialTitle={post.title}
                                         initialContent={post.content}
+                                        initialImage={post.imageUrl}
                                         onCancel={() => setIsEditing(false)}
                                         newPost={(updatedPost: Post) => setPost(updatedPost)}
                                     />

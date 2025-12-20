@@ -51,14 +51,13 @@ export async function fetchPostById(postId: string) {
     }
 
     const data = await res.json();
-    // Ensures Post type is met 
     const posts = normalizePosts([data.post || {}]);
 
     return { post: posts[0] };
 }
 
 // funciton that creates a post under a topic which is identified by topicSlug
-export async function createPost(postData: { title: string; content: string, topicSlug: string }) {
+export async function createPost(postData: { title: string; content: string, topicSlug: string, imageUrl?: string | null }) {
     const endpoint = `${baseUrl}/posts/create/${postData.topicSlug}`;
 
     const res = await fetch(endpoint, {
@@ -101,8 +100,8 @@ export async function deletePost(postId: string) {
 }
 
 // function that updates a post by post Id
-export async function updatePost(postId: string, title: string, content: string) {
-    const endpoint = `${baseUrl}/posts/update/${postId}`;
+export async function updatePost(postData: { title: string; content: string, postId: string, imageUrl?: string | null }) {
+    const endpoint = `${baseUrl}/posts/update/${postData.postId}`;
 
     const res = await fetch(endpoint, {
         method: "PUT",
@@ -110,7 +109,7 @@ export async function updatePost(postId: string, title: string, content: string)
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ title, content }),
+        body: JSON.stringify(postData),
     });
 
     if (!res.ok) {

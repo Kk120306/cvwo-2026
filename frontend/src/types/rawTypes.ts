@@ -24,6 +24,7 @@ export interface RawPost {
     Likes: number;
     Dislikes: number;
     MyVote: "like" | "dislike" | null;
+    ImageUrl: string | null;
 }
 
 

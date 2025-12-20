@@ -4,24 +4,27 @@ import { updatePost } from "../../api/handlePost"
 import RichTextEditor from "../RichTextEditor"
 import type { Post } from "../../types/globalTypes"
 import { normalizePost } from "../../helpers/normalizer"
+import ImageForm from "../image/ImageForm"
+import { getS3Url, uploadFileToS3, deleteImage } from "../../api/handleImage"
 
-// Props for the update post component 
 interface UpdatePostProps {
     postId: string
     initialTitle: string
     initialContent: string
+    initialImage: string | null
     onCancel?: () => void
     newPost: (updatedPost: Post) => void
 }
 
-// Componenet pop up for updating post info
-const UpdatePost = ({ postId, initialTitle, initialContent, onCancel, newPost }: UpdatePostProps) => {
+const UpdatePost = ({ postId, initialTitle, initialContent, initialImage, onCancel, newPost }: UpdatePostProps) => {
     const [content, setContent] = useState(initialContent)
     const [title, setTitle] = useState(initialTitle)
     const [isUpdating, setIsUpdating] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(initialImage)
 
-    // Function to update the post 
+    // Function to change the post to new values 
     const handleUpdate = async () => {
         if (!content.trim()) {
             setError("Post content cannot be empty.")
@@ -36,11 +39,39 @@ const UpdatePost = ({ postId, initialTitle, initialContent, onCancel, newPost }:
         try {
             setIsUpdating(true)
             setError(null)
-            const res = await updatePost(postId, title, content)
-            const updatedPost = normalizePost(res) 
-            // using the prop passed down that updates the state of the post in the parent component 
+
+            let imageUrl: string | null = initialImage
+
+            // User uploaded a new image
+            if (imageFile) {
+                const signedUrl = await getS3Url()
+                const uploadedUrl = await uploadFileToS3(signedUrl, imageFile)
+                if (uploadedUrl) {
+                    imageUrl = uploadedUrl
+
+                    // Delete old image since we have a new image replacing it 
+                    if (initialImage) {
+                        try {
+                            await deleteImage(initialImage)
+                        } catch (err) {
+                            console.error("Failed to delete previous image:", err)
+                        }
+                    }
+                }
+            }
+            // User removed an existing image and did not add a new one 
+            else if (!imagePreview && initialImage) {
+                imageUrl = null
+                try {
+                    await deleteImage(initialImage)
+                } catch (err) {
+                    console.error("Failed to delete image:", err)
+                }
+            }
+            // No changes to image - keep initialImage
+            const res = await updatePost({ postId, title, content, imageUrl })
+            const updatedPost = normalizePost(res)
             newPost(updatedPost)
-            // Closes the window for the form 
             onCancel?.()
         } catch (err) {
             console.error("Failed to update post:", err)
@@ -48,6 +79,16 @@ const UpdatePost = ({ postId, initialTitle, initialContent, onCancel, newPost }:
         } finally {
             setIsUpdating(false)
         }
+    }
+
+    // Function to handle cancel button click
+    const handleCancel = () => {
+        // If we created a in browser preview URL, no longer need it so revoke it 
+        // This is done in the Image Form so that we dont end up uploading to bucket before user sends final submit 
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview)
+        }
+        onCancel?.()
     }
 
     return (
@@ -62,12 +103,20 @@ const UpdatePost = ({ postId, initialTitle, initialContent, onCancel, newPost }:
 
             {error && <Box color="error.main">{error}</Box>}
 
+            {/* Componenet form for user to update new images or add image to existing post  */}
+            <ImageForm
+                imageFile={imageFile}
+                setImageFile={setImageFile}
+                imagePreview={imagePreview}
+                setImagePreview={setImagePreview}
+            />
+
             <Box display="flex" gap={1} justifyContent="flex-end">
                 {onCancel && (
                     <Button
                         variant="outlined"
                         color="secondary"
-                        onClick={onCancel}
+                        onClick={handleCancel}
                         disabled={isUpdating}
                     >
                         Cancel
