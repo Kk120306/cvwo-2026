@@ -393,9 +393,9 @@ func UpdatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title    string  
-		Content  string  
-		ImageURL *string 
+		Title    string
+		Content  string
+		ImageURL *string
 	}
 
 	// Check if parsing req binds with struct
@@ -447,7 +447,7 @@ func UpdatePost(c *gin.Context) {
 	if body.ImageURL != nil {
 		updates["image_url"] = *body.ImageURL
 	} else {
-		// Explicitly set to null if imageUrl is null 
+		// Explicitly set to null if imageUrl is null
 		updates["image_url"] = nil
 	}
 
@@ -471,5 +471,48 @@ func UpdatePost(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"post": updatedPost,
+	})
+}
+
+// function that toggles post pins / assumed that user is a admin through middleware
+func TogglePinPost(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	// Parse request body to get desired pin state
+	var body struct {
+		IsPinned bool
+	}
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Retrieve and update post
+	var post models.Post
+	err := database.DB.First(&post, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve post"})
+		return
+	}
+
+	// Update pin status
+	post.IsPinned = body.IsPinned
+	saveErr := database.DB.Save(&post).Error
+	if saveErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update pin status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"isPinned": post.IsPinned,
 	})
 }

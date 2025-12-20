@@ -16,5 +16,6 @@ func PostsRoutes(r *gin.Engine) {
 		postsRouter.POST("/create/:slug", middleware.CheckAuth, controllers.CreatePost)
 		postsRouter.DELETE("/delete/:id", middleware.CheckAuth, controllers.DeletePost)
 		postsRouter.PUT("/update/:id", middleware.CheckAuth, controllers.UpdatePost)
+		postsRouter.PATCH("/pin/:id", middleware.CheckAuth, middleware.CheckAdmin, controllers.TogglePinPost)
 	}
 }

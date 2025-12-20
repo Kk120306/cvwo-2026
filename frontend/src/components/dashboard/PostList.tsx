@@ -12,7 +12,7 @@ import {
     InputLabel,
     Tooltip,
 } from "@mui/material"
-import { fetchPostByTopic } from "../../api/handlePost"
+import { fetchPostByTopic, managePostPin } from "../../api/handlePost"
 import type { Post } from "../../types/globalTypes"
 import { useNavigate } from "react-router-dom"
 import { votePost } from "../../api/handleVote"
@@ -21,6 +21,7 @@ import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 import { useAppSelector } from "../../hooks/reduxHooks";
 import { sharePost } from "../../helpers/share"
 import ShareIcon from '@mui/icons-material/Share';
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 // Props for PostList component
 interface PostListProps {
@@ -114,6 +115,23 @@ export default function PostList({ topic }: PostListProps) {
         )
     }
 
+    // Function that handles the pinning and unpinning of a post 
+    const handlePin = async (postId: string, pin: boolean) => {
+        try {
+            await managePostPin(postId, pin)
+            setPosts(prev =>
+                prev.map(post =>
+                    post.id === postId
+                        ? { ...post, isPinned: pin }
+                        : post
+                )
+            )
+        } catch {
+            alert("Failed to update pin status")
+            return
+        }
+    }
+
 
     if (loading) return <Typography>Loading posts...</Typography>
     if (error) return <Typography color="error">{error}</Typography>
@@ -153,9 +171,25 @@ export default function PostList({ topic }: PostListProps) {
                         onClick={() => navigate(`/posts/${post.id}`)}
                     >
                         <CardContent>
-                            <Typography variant="caption" color="text.secondary">
-                                {post.isPinned ? "📌 Pinned by Admin" : ""}
-                            </Typography>
+                            {/* Show the ability to pin and unpin comments if the usre is an admin*/}
+                            {user?.isAdmin && (
+                                <Box display="flex" alignItems="center" mb={1} gap={1}>
+                                    <IconButton
+                                        size="small"
+                                        color={post.isPinned ? "error" : "default"}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handlePin(post.id, !post.isPinned)
+                                        }}
+                                    >
+                                        <PushPinIcon fontSize="small" />
+
+                                    </IconButton>
+                                    <Typography>
+                                        {post.isPinned ? "Pinned by Admin" : "Click to Pin Post"}
+                                    </Typography>
+                                </Box>
+                            )}
                             <Box>
                                 {post.imageUrl && (
                                     <Box mb={1}>

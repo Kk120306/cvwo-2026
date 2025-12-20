@@ -121,3 +121,25 @@ export async function updatePost(postData: { title: string; content: string, pos
     toast.success("Post updated successfully");
     return data.post;
 }
+
+// function that changes the pin status of a post 
+export async function managePostPin(postId: string, isPinned: boolean) {
+    const endpoint = `${baseUrl}/posts/pin/${postId}`;
+
+    const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ isPinned }),
+    });
+
+    if (!res.ok) {
+        toast.error(`Failed to ${isPinned ? "pin" : "unpin"} post`);
+        throw new Error(`Failed to ${isPinned ? "pin" : "unpin"} post`);
+    }
+
+    toast.success(`Post ${isPinned ? "pinned" : "unpinned"} successfully`);
+    return true;
+}
