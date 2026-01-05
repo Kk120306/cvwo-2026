@@ -3,25 +3,29 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Kk120306/cvwo-2026/backend/database"
-	"github.com/Kk120306/cvwo-2026/backend/helpers"
-	"github.com/Kk120306/cvwo-2026/backend/models"
+	"github.com/Kk120306/cvwo-2026/backend/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-// retrives all topics avaliable sorted by creation date
-func GetTopics(c *gin.Context) {
-	// Create a slice for the topics
-	var topics []models.Topic
+// TopicController handles HTTP requests for topics
+type TopicController struct {
+	topicService *services.TopicService
+}
 
-	// query all the topics from database ordered - appends it to topic slice
-	result := database.DB.Order("created_at desc").Find(&topics)
+// NewTopicController creates a new instance of TopicController
+func NewTopicController() *TopicController {
+	return &TopicController{
+		topicService: services.NewTopicService(),
+	}
+}
 
-	// If there was a error in retriving from the database
-	if result.Error != nil {
+// retrieves all topics available sorted by creation date
+func (tc *TopicController) GetTopics(c *gin.Context) {
+	// Get topics through service layer
+	topics, err := tc.topicService.GetAllTopics()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve topics",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -33,10 +37,10 @@ func GetTopics(c *gin.Context) {
 }
 
 // Function that creates a topic and returns the topic object that was created
-func CreateTopic(c *gin.Context) {
+func (tc *TopicController) CreateTopic(c *gin.Context) {
 	// structure of the request body that we need
 	var body struct {
-		Name string
+		Name string `json:"name" binding:"required"`
 	}
 
 	// if parsing the req to body fails, returns non nil, sends bad request
@@ -47,17 +51,14 @@ func CreateTopic(c *gin.Context) {
 		return
 	}
 
-	topic := models.Topic{
+	// Create topic through service layer
+	topic, err := tc.topicService.CreateTopic(services.CreateTopicInput{
 		Name: body.Name,
-		Slug: helpers.GenerateSlug(body.Name),
-	}
-	// Creating the Topic
-	result := database.DB.Create(&topic)
+	})
 
-	// if there was an error during creation
-	if result.Error != nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to create topic",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -70,7 +71,7 @@ func CreateTopic(c *gin.Context) {
 
 // Function that deletes a topic
 // https://gorm.io/docs/delete.html
-func DeleteTopic(c *gin.Context) {
+func (tc *TopicController) DeleteTopic(c *gin.Context) {
 	// Get the slug of the topic
 	slug := c.Param("slug")
 	if slug == "" {
@@ -80,19 +81,16 @@ func DeleteTopic(c *gin.Context) {
 		return
 	}
 
-	// Delete through Gorm - passing in the slug
-	var topic models.Topic
-	result := database.DB.Delete(&topic, "slug = ?", slug)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to delete topic",
-		})
-	}
-
-	// When there were no changes to the database, means topic was not found
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Topic not found",
+	// Delete through service layer
+	err := tc.topicService.DeleteTopic(slug)
+	if err != nil {
+		// Determine status code based on error type
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "topic not found" {
+			statusCode = http.StatusBadRequest
+		}
+		c.JSON(statusCode, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -103,8 +101,8 @@ func DeleteTopic(c *gin.Context) {
 }
 
 // Function that updates a topic name
-func UpdateTopic(c *gin.Context) {
-	// Retrive the slug - name it cur as new topic name will change the slug
+func (tc *TopicController) UpdateTopic(c *gin.Context) {
+	// Retrieve the slug - name it cur as new topic name will change the slug
 	curSlug := c.Param("slug")
 	if curSlug == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -113,9 +111,9 @@ func UpdateTopic(c *gin.Context) {
 		return
 	}
 
-	// Prase the new body that is passed - the new name user wants to set
+	// Parse the new body that is passed - the new name user wants to set
 	var body struct {
-		Name string
+		Name string `json:"name" binding:"required"`
 	}
 
 	// Must require empty validation in the frontend
@@ -126,35 +124,28 @@ func UpdateTopic(c *gin.Context) {
 		return
 	}
 
-	// Find the topic
-	// https://gorm.io/docs/update.html
-	var topic models.Topic
-	result := database.DB.First(&topic, "slug = ?", curSlug)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Topic not found",
-			})
-			return
+	// Find the topic through service layer
+	topic, err := tc.topicService.FindTopicBySlug(curSlug)
+	if err != nil {
+		// Determine status code based on error type
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "topic not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve topic",
+		c.JSON(statusCode, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	// Updating the topic name and slug
-	newSlug := helpers.GenerateSlug(body.Name)
-	// Since topic is already found, it calls WHERE = loaded ID
-	res := database.DB.Model(&topic).Updates(models.Topic{
+	// Update topic through service layer
+	err = tc.topicService.UpdateTopic(topic, services.UpdateTopicInput{
 		Name: body.Name,
-		Slug: newSlug,
-	})	
-	
-	// If there was an error during update
-	if res.Error != nil {
+	})
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to update topic",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -163,5 +154,4 @@ func UpdateTopic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"topic": topic,
 	})
-
 }

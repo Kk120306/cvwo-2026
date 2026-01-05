@@ -1,4 +1,3 @@
-import { normalizePosts } from "../helpers/normalizer";
 import { toast } from "react-hot-toast";
 
 
@@ -28,9 +27,7 @@ export async function fetchPostByTopic(topicSlug: string) {
     const data = await res.json();
     console.log(data);
     // Ensures Post type is met 
-    const posts = normalizePosts(data.posts || []);
-
-    return posts;
+    return data.posts;
 }
 
 
@@ -51,9 +48,7 @@ export async function fetchPostById(postId: string) {
     }
 
     const data = await res.json();
-    const posts = normalizePosts([data.post || {}]);
-
-    return { post: posts[0] };
+    return data.post;
 }
 
 // funciton that creates a post under a topic which is identified by topicSlug

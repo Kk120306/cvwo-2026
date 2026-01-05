@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, type Dispatch, type SetStateAction } from "react"
 import {
     Box,
     Typography,
@@ -18,6 +18,7 @@ import type { Comment } from "../../types/globalTypes"
 // On delete is a callback to remove the comment from parent state
 interface CommentListProps {
     comments: Comment[]
+    postAuthorId: string
     onVoteUpdate: (
         commentId: string,
         likes: number,
@@ -26,17 +27,18 @@ interface CommentListProps {
     ) => void
     onDelete: (commentId: string) => void
     onUpdate: (commentId: string, newContent: string) => void
+    setComments: Dispatch<SetStateAction<Comment[]>>
 }
 
 // Different options for sorting 
 type SortOption = "recent" | "oldest" | "likes" | "dislikes"
 
 // Compoenent for comment list to be put in each post page 
-const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate }: CommentListProps) => {
+const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, postAuthorId, setComments }: CommentListProps) => {
     const [search, setSearch] = useState("")
     const [sortBy, setSortBy] = useState<SortOption>("recent")
 
-    
+
     // Ensures that everytime a new commment is passed, we make sure that there are no undefined values as .toLowerCase() cannot be called 
     const normalizedComments = useMemo(
         () =>
@@ -64,8 +66,13 @@ const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate }: CommentList
             )
         })
 
-        // works by the sign of the number. If negative a comes before b, else b comes before a ... 
+        // Sort with pinned comments always at the top
         return [...filtered].sort((a, b) => {
+            // Pinned comments always come first
+            if (a.isPinned && !b.isPinned) return -1
+            if (!a.isPinned && b.isPinned) return 1
+
+            // If both pinned or both not pinned, use selected sort option
             switch (sortBy) {
                 case "likes":
                     return b.likes - a.likes
@@ -122,10 +129,12 @@ const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate }: CommentList
             ) : (filteredAndSortedComments.map((comment) => (
                 <CommentCard
                     key={comment.id}
+                    postAuthorId={postAuthorId}
                     comment={comment}
                     onVoteUpdate={onVoteUpdate}
                     onDelete={onDelete}
                     onUpdate={onUpdate}
+                    setComments={setComments}
                 />
             )))}
         </Box>

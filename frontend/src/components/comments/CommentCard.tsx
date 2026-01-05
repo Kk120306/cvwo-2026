@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type Dispatch, type SetStateAction } from "react"
 import { useNavigate } from "react-router-dom"
 import {
     Card,
@@ -12,8 +12,9 @@ import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined"
 import { voteComment } from "../../api/handleVote"
 import { useAppSelector } from "../../hooks/reduxHooks"
 import type { Comment } from "../../types/globalTypes"
-import { deleteComment } from "../../api/handleComment"
+import { deleteComment, manageCommentPin } from "../../api/handleComment"
 import UpdateComment from "./CommentUpdate"
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 // Componenet prop for each comment card. 
@@ -22,13 +23,15 @@ import UpdateComment from "./CommentUpdate"
 // On update callback that updates the comment content in parent state
 interface CommentCardProps {
     comment: Comment
+    postAuthorId: string
     onVoteUpdate: (commentId: string, likes: number, dislikes: number, myVote: "like" | "dislike" | null) => void
     onDelete: (commentId: string) => void
     onUpdate: (commentId: string, newContent: string) => void
+    setComments: Dispatch<SetStateAction<Comment[]>>
 }
 
 // Comment card componenet 
-const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate }: CommentCardProps) => {
+const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, setComments }: CommentCardProps) => {
     const [isVoting, setIsVoting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
 
@@ -68,10 +71,44 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate }: CommentCardP
         }
     }
 
+    const handlePin = async (commentId: string, isPinned: boolean, authorId: string) => {
+        try {
+            await manageCommentPin(commentId, isPinned, authorId);
+            setComments(prev =>
+                prev.map(c =>
+                    c.id === commentId
+                        ? { ...c, isPinned: isPinned }
+                        : c
+                )
+            )
+        } catch {
+            alert("Failed to update pin status")
+            return
+        }
+    }
+
 
     return (
         <Card sx={{ mb: 2 }}>
             <CardContent>
+                {(user?.isAdmin || postAuthorId === user?.id) && (
+                    <Box display="flex" alignItems="center" mb={1} gap={1}>
+                        <IconButton
+                            size="small"
+                            color={comment.isPinned ? "error" : "default"}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handlePin(comment.id, !comment.isPinned, postAuthorId)
+                            }}
+                        >
+                            <PushPinIcon fontSize="small" />
+
+                        </IconButton>
+                        <Typography>
+                            {comment.isPinned ? "Pinned by Admin or OP" : "Click to Pin Comment"}
+                        </Typography>
+                    </Box>
+                )}
                 <Typography
                     variant="subtitle2"
                     color="text.secondary"

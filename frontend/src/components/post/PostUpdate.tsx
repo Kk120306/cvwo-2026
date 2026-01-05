@@ -1,9 +1,8 @@
 import { useState } from "react"
 import { Box, Button, CircularProgress, TextField } from "@mui/material"
 import { updatePost } from "../../api/handlePost"
-import RichTextEditor from "../RichTextEditor"
+import RichTextEditor from "../provider/RichTextEditor"
 import type { Post } from "../../types/globalTypes"
-import { normalizePost } from "../../helpers/normalizer"
 import ImageForm from "../image/ImageForm"
 import { getS3Url, uploadFileToS3, deleteImage } from "../../api/handleImage"
 
@@ -70,8 +69,7 @@ const UpdatePost = ({ postId, initialTitle, initialContent, initialImage, onCanc
             }
             // No changes to image - keep initialImage
             const res = await updatePost({ postId, title, content, imageUrl })
-            const updatedPost = normalizePost(res)
-            newPost(updatedPost)
+            newPost(res)
             onCancel?.()
         } catch (err) {
             console.error("Failed to update post:", err)

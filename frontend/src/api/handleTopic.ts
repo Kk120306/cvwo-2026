@@ -1,5 +1,4 @@
 import { toast } from "react-hot-toast";
-import { normalizeTopics } from "../helpers/normalizer";
 
 const baseUrl = import.meta.env.VITE_BACKEND_HOST;
 
@@ -22,9 +21,7 @@ export async function fetchAllTopics() {
 
     // Parse the JSON response
     const data = await res.json();
-    const normalized = normalizeTopics(data.topics || []);
-
-    return normalized;
+    return data.topics;
 }
 
 // Function to create a new topic via the API

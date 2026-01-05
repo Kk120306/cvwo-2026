@@ -8,9 +8,12 @@ import (
 
 // ImageRoutes sets up the post routes
 func ImageRoutes(r *gin.Engine) {
+
+	imageController := controllers.NewS3Controller()
+
 	imageRouter := r.Group("/images") // Groups them under /images
 	{
-		imageRouter.GET("/s3Url", middleware.CheckAuth, controllers.GetS3UploadURL)
-		imageRouter.DELETE("/delete/:imageName", middleware.CheckAuth, controllers.DeleteS3Image)
+		imageRouter.GET("/s3Url", middleware.CheckAuth, imageController.GetS3UploadURL)
+		imageRouter.DELETE("/delete/:imageName", middleware.CheckAuth, imageController.DeleteS3Image)
 	}
 }

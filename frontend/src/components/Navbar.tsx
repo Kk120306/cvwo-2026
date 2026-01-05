@@ -61,7 +61,8 @@ const Navbar = () => {
                             Logout
                         </Button>
                         <Avatar
-                            // TODO : qadd default avatar if avatar is nul 
+                            component={Link}
+                            to={`/profile/${user.username}`}
                             src={user.avatarURL}
                             alt={user.username}
                             sx={{ width: 32, height: 32 }}

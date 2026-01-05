@@ -8,10 +8,13 @@ import (
 
 // VoteRoutes sets up the vote routes
 func VoteRoutes(r *gin.Engine) {
+
+	voteController := controllers.NewVoteController()
+
 	voteRouter := r.Group("/vote") // Groups them under /vote
 	{
-		voteRouter.POST("/", middleware.CheckAuth, controllers.CreateOrUpdateVote)
+		voteRouter.POST("/", middleware.CheckAuth, voteController.CreateOrUpdateVote)
 		// id is the content Id and type is either "post" or "comment"
-		voteRouter.GET("/count/:id/:type", controllers.GetVotesCount)
+		voteRouter.GET("/count/:id/:type", voteController.GetVotesCount)
 	}
 }

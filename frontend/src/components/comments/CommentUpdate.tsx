@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Box, Button, CircularProgress } from "@mui/material"
 import { updateComment } from "../../api/handleComment"
-import RichTextEditor from "../RichTextEditor"
+import RichTextEditor from "../provider/RichTextEditor"
 import { toast } from "react-hot-toast"
 
 // Props for the udpate comment compoenent 
@@ -27,7 +27,7 @@ const UpdateComment = ({ commentId, initialContent, onCancel, onUpdate }: Update
 
         try {
             setIsUpdating(true)
-            await updateComment(commentId, content)
+            await updateComment({commentId, content})
             toast.success("Comment updated successfully")
             onUpdate(content) // Update parent state so that it instantly reflects change and no refresh requied 
         } catch (err) {

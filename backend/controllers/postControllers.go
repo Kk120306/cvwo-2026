@@ -1,82 +1,40 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
-	"strings"
 
-	"github.com/Kk120306/cvwo-2026/backend/database"
 	"github.com/Kk120306/cvwo-2026/backend/models"
+	"github.com/Kk120306/cvwo-2026/backend/services"
 	"github.com/gin-gonic/gin"
-	"github.com/microcosm-cc/bluemonday"
-	"gorm.io/gorm"
 )
 
-// Struct to hold vote data along with post
-type PostWithVotes struct {
-	models.Post
-	Likes    int64
-	Dislikes int64
-	MyVote   *string
+// PostController handles HTTP requests for posts
+type PostController struct {
+	postService *services.PostService
+}
+
+// NewPostController creates a new instance of PostController
+func NewPostController() *PostController {
+	return &PostController{
+		postService: services.NewPostService(),
+	}
 }
 
 // Function to get all posts (across all topics)
-func GetAllPosts(c *gin.Context) {
-	var posts []PostWithVotes
-	var userID string
-	var joinUserVote bool
-
-	// if user exists store user data
+func (pc *PostController) GetAllPosts(c *gin.Context) {
+	// Check if user is authenticated
+	var userID *string
 	u, exists := c.Get("user")
+	// if user exists store user data
 	if exists {
 		user := u.(models.User)
-		userID = user.ID
-		joinUserVote = true
+		userID = &user.ID
 	}
 
-	// From all posts get the likes and dislikes count
-	selectStr := `
-		posts.*,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-	`
-
-	// If user is authenticated, also get their vote on each post
-	if joinUserVote {
-		selectStr += `,
-			MAX(user_votes.vote_type) AS my_vote`
-	}
-
-	// attach votes table where votable_id matches post id and votable_type is post
-	// left joins creates null so coalesce is needed
-	query := database.DB.Model(&models.Post{}).
-		Select(selectStr).
-		Joins(`
-			LEFT JOIN votes 
-			ON votes.votable_id = posts.id 
-			AND votes.votable_type = 'post'
-		`)
-
-	// if user is authenticated, join another table that only has users votes
-	if joinUserVote {
-		query = query.Joins(`
-			LEFT JOIN votes AS user_votes
-			ON user_votes.votable_id = posts.id
-			AND user_votes.votable_type = 'post'
-			AND user_votes.user_id = ?
-		`, userID)
-	}
-
-	// Groups by post id, reomves any duplicate from join post and combines rows
-	// Prioritize pinned post first
-	query = query.Preload("Author").
-		Preload("Topic").
-		Group("posts.id").
-		Order("is_pinned DESC, created_at DESC")
-
-	err := query.Find(&posts).Error
+	// Get posts through service layer
+	posts, err := pc.postService.GetAllPosts(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve posts"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -84,78 +42,29 @@ func GetAllPosts(c *gin.Context) {
 }
 
 // Function to get posts under a topic
-func GetPostsByTopic(c *gin.Context) {
-	slug := strings.ToLower(c.Param("slug"))
+func (pc *PostController) GetPostsByTopic(c *gin.Context) {
+	slug := c.Param("slug")
 	if slug == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Please provide a valid topic slug"})
 		return
 	}
 
-	var topic models.Topic
-	err := database.DB.First(&topic, "slug = ?", slug).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Topic not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve topic"})
-		return
-	}
-
-	var posts []PostWithVotes
-	var userID string
-	var joinUserVote bool
-	// Check if user is authenticated, if so store user data
+	// Check if user is authenticated
+	var userID *string
 	if u, exists := c.Get("user"); exists {
 		user := u.(models.User)
-		userID = user.ID
-		joinUserVote = true
+		userID = &user.ID
 	}
 
-	// From all posts get the likes and dislikes count
-	selectStr := `
-		posts.*,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-	`
-
-	// If user is authenticated, also get their vote on each post
-	if joinUserVote {
-		selectStr += `,
-			MAX(CASE WHEN user_votes.user_id IS NOT NULL THEN user_votes.vote_type ELSE NULL END) AS my_vote`
-	}
-
-	// attach votes table where votable_id matches post id and votable_type is post
-	// left joins creates null so coalesce is needed
-	query := database.DB.Model(&models.Post{}).
-		Select(selectStr).
-		Joins(`
-			LEFT JOIN votes 
-			ON votes.votable_id = posts.id 
-			AND votes.votable_type = 'post'
-		`).
-		Where("posts.topic_id = ?", topic.ID)
-
-	// if user is authenticated, join another table that only has users votes
-	if joinUserVote {
-		query = query.Joins(`
-			LEFT JOIN votes AS user_votes
-			ON user_votes.votable_id = posts.id
-			AND user_votes.votable_type = 'post'
-			AND user_votes.user_id = ?
-		`, userID)
-	}
-
-	// Groups by post id, reomves any duplicate from join post and combines rows
-	query = query.Preload("Author").
-		Preload("Topic").
-		Group("posts.id").
-		Order("is_pinned DESC, created_at DESC")
-
-	// Execute query and put results in posts slice
-	findErr := query.Find(&posts).Error
-	if findErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve posts"})
+	// Get posts through service layer
+	posts, err := pc.postService.GetPostsByTopic(slug, userID)
+	if err != nil {
+		// Determine status code based on error type
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "topic not found" {
+			statusCode = http.StatusBadRequest
+		}
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -163,7 +72,7 @@ func GetPostsByTopic(c *gin.Context) {
 }
 
 // Creating a new post under a certain topic - middleware call assumed, that the user is authenticated
-func CreatePost(c *gin.Context) {
+func (pc *PostController) CreatePost(c *gin.Context) {
 	// getting the slug of topic through params
 	slug := c.Param("slug")
 	if slug == "" {
@@ -175,9 +84,9 @@ func CreatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title    string
-		Content  string
-		ImageUrl *string
+		Title    string  `json:"title" binding:"required"`
+		Content  string  `json:"content" binding:"required"`
+		ImageUrl *string `json:"imageUrl"`
 	}
 
 	// check if parsing req binds with struct
@@ -188,39 +97,32 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// Retrieve topic
-	var topic models.Topic
-	result := database.DB.First(&topic, "slug = ?", slug)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Topic not found"})
-			return
+	// Retrieve topic through service layer
+	topic, err := pc.postService.FindTopicBySlug(slug)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "topic not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve topic"})
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Get authenticated user from middleware
 	user := c.MustGet("user").(models.User)
 
-	// Sanitize content input from rich text editor
-	// https://github.com/microcosm-cc/bluemonday - prevent xxs attacks
-	safeContent := bluemonday.UGCPolicy().Sanitize(body.Content)
-
-	// Create the post
-	post := models.Post{
+	// Create post through service layer
+	post, err := pc.postService.CreatePost(services.CreatePostInput{
 		Title:    body.Title,
-		Content:  safeContent,
+		Content:  body.Content,
 		TopicID:  topic.ID,
 		AuthorID: user.ID,
 		ImageUrl: body.ImageUrl,
-	}
+	})
 
-	// Save to database
-	res := database.DB.Create(&post)
-	if res.Error != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to create post",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -232,71 +134,28 @@ func CreatePost(c *gin.Context) {
 }
 
 // function to get a post by their id
-func GetPost(c *gin.Context) {
+func (pc *PostController) GetPost(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 		return
 	}
 
-	var post PostWithVotes
-	var userID string
-	var joinUserVote bool
-
-	// if user exists store user data
+	// Check if user is authenticated
+	var userID *string
 	if u, exists := c.Get("user"); exists {
 		user := u.(models.User)
-		userID = user.ID
-		joinUserVote = true
+		userID = &user.ID
 	}
 
-	// From all posts get the likes and dislikes count
-	selectStr := `
-		posts.*,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-	`
-
-	// If user is authenticated, also get their vote on the post
-	if joinUserVote {
-		selectStr += `,
-			MAX(CASE WHEN user_votes.user_id IS NOT NULL THEN user_votes.vote_type ELSE NULL END) AS my_vote`
-	}
-
-	// attach votes table where votable_id matches post id and votable_type is post
-	// left joins creates null so coalesce is needed
-	query := database.DB.Model(&models.Post{}).
-		Select(selectStr).
-		Joins(`
-			LEFT JOIN votes 
-			ON votes.votable_id = posts.id 
-			AND votes.votable_type = 'post'
-		`).
-		Where("posts.id = ?", id)
-
-	// if user is authenticated, join another table that only has users votes
-	if joinUserVote {
-		query = query.Joins(`
-			LEFT JOIN votes AS user_votes
-			ON user_votes.votable_id = posts.id
-			AND user_votes.votable_type = 'post'
-			AND user_votes.user_id = ?
-		`, userID)
-	}
-
-	// Groups by post id, reomves any duplicate from join post and combines rows
-	// Preload Author and Topic relationships
-	query = query.Preload("Author").
-		Preload("Topic").
-		Group("posts.id")
-
-	err := query.First(&post).Error
+	// Get post through service layer
+	post, err := pc.postService.GetPostByID(id, userID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Post not found"})
-			return
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "post not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve post"})
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -304,7 +163,7 @@ func GetPost(c *gin.Context) {
 }
 
 // function to delete a post by their id
-func DeletePost(c *gin.Context) {
+func (pc *PostController) DeletePost(c *gin.Context) {
 	// getting the id of post through params
 	id := c.Param("id")
 	if id == "" {
@@ -312,69 +171,28 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 
-	// Fetch the post first
-	var post models.Post
-	result := database.DB.First(&post, "id = ?", id)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Post not found"})
-			return
+	// Fetch the post first through service layer
+	post, err := pc.postService.FindPostByID(id)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "post not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve post"})
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
-	// check if the user is the author or admin
+	// check if the user is the author or admin through service layer
 	user := c.MustGet("user").(models.User)
-	if post.AuthorID != user.ID && !user.IsAdmin {
+	if !pc.postService.CanUserModifyPost(&user, post) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to delete this post"})
 		return
 	}
 
-	// Transaction to handle all votes, ensures all or no operations happen
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		// Get all comment IDs for this post to delete their votes
-		var commentIDs []string
-		retrieveErr := tx.Model(&models.Comment{}).
-			Where("post_id = ?", id).      //  Get comments under the post
-			Pluck("id", &commentIDs).Error // Pluck gets a slice of only the ids
-		if retrieveErr != nil {
-			return retrieveErr
-		}
-
-		// Delete votes on comments
-		if len(commentIDs) > 0 {
-			err := tx.Where("votable_id IN ? AND votable_type = ?", commentIDs, "comment").
-				Delete(&models.Vote{}).Error
-			if err != nil {
-				return err
-			}
-		}
-
-		// Delete votes on the post itself
-		err := tx.Where("votable_id = ? AND votable_type = ?", id, "post").
-			Delete(&models.Vote{}).Error
-		if err != nil {
-			return err
-		}
-
-		//  Delete comments on the post
-		commentErr := tx.Where("post_id = ?", id).Delete(&models.Comment{}).Error
-		if commentErr != nil {
-			return commentErr
-		}
-
-		// Finally, delete the post itself
-		delError := tx.Delete(&post).Error
-		if delError != nil {
-			return delError
-		}
-
-		return nil
-	})
-
+	// Delete post through service layer
+	err = pc.postService.DeletePost(post)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete post"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -383,7 +201,7 @@ func DeletePost(c *gin.Context) {
 }
 
 // UpdatePost updates a post by id
-func UpdatePost(c *gin.Context) {
+func (pc *PostController) UpdatePost(c *gin.Context) {
 	// Get the id of post through params
 	id := c.Param("id")
 	if id == "" {
@@ -393,9 +211,9 @@ func UpdatePost(c *gin.Context) {
 
 	// Parse request body
 	var body struct {
-		Title    string
-		Content  string
-		ImageURL *string
+		Title    string  `json:"title" binding:"required"`
+		Content  string  `json:"content" binding:"required"`
+		ImageURL *string `json:"imageUrl"`
 	}
 
 	// Check if parsing req binds with struct
@@ -405,21 +223,14 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
-	// Validate fields are not empty
-	if strings.TrimSpace(body.Title) == "" || strings.TrimSpace(body.Content) == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Title and content cannot be empty"})
-		return
-	}
-
-	// Retrieve post
-	var post models.Post
-	retriveErr := database.DB.First(&post, "id = ?", id).Error
-	if retriveErr != nil {
-		if errors.Is(retriveErr, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
-			return
+	// Retrieve post through service layer
+	post, err := pc.postService.FindPostByID(id)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "post not found" {
+			statusCode = http.StatusNotFound
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve post"})
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -431,41 +242,27 @@ func UpdatePost(c *gin.Context) {
 	}
 	user := userInterface.(models.User)
 
-	// Authorization check
-	if post.AuthorID != user.ID && !user.IsAdmin {
+	// Authorization check through service layer
+	if !pc.postService.CanUserModifyPost(&user, post) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You are not allowed to update this post"})
 		return
 	}
 
-	// Update fields - Use map to allow nil values
-	updates := map[string]interface{}{
-		"title":   body.Title,
-		"content": body.Content,
-	}
-
-	// Handle ImageURL separately to allow setting it to null
-	if body.ImageURL != nil {
-		updates["image_url"] = *body.ImageURL
-	} else {
-		// Explicitly set to null if imageUrl is null
-		updates["image_url"] = nil
-	}
-
-	updateErr := database.DB.Model(&post).Updates(updates).Error
-	if updateErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post"})
+	// Update post through service layer
+	err = pc.postService.UpdatePost(post, services.UpdatePostInput{
+		Title:    body.Title,
+		Content:  body.Content,
+		ImageURL: body.ImageURL,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Reload the post with relationships (Author and Topic)
-	var updatedPost models.Post
-	reloadErr := database.DB.
-		Preload("Author").
-		Preload("Topic").
-		Where("id = ?", post.ID).
-		First(&updatedPost).Error
-	if reloadErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated post"})
+	// Reload the post with relationships (Author and Topic) through service layer
+	updatedPost, err := pc.postService.ReloadPostWithRelationships(post.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -475,7 +272,7 @@ func UpdatePost(c *gin.Context) {
 }
 
 // function that toggles post pins / assumed that user is a admin through middleware
-func TogglePinPost(c *gin.Context) {
+func (pc *PostController) TogglePinPost(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
@@ -484,31 +281,30 @@ func TogglePinPost(c *gin.Context) {
 
 	// Parse request body to get desired pin state
 	var body struct {
-		IsPinned bool
+		IsPinned bool `json:"isPinned" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&body); err != nil {
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// Retrieve and update post
-	var post models.Post
-	err := database.DB.First(&post, "id = ?", id).Error
+	// Retrieve post through service layer
+	post, err := pc.postService.FindPostByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
-			return
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "post not found" {
+			statusCode = http.StatusNotFound
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve post"})
+		c.JSON(statusCode, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Update pin status
-	post.IsPinned = body.IsPinned
-	saveErr := database.DB.Save(&post).Error
-	if saveErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update pin status"})
+	// Update pin status through service layer
+	err = pc.postService.TogglePinPost(post, body.IsPinned)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

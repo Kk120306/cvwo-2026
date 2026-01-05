@@ -3,7 +3,6 @@ import AuthForm from '../../components/authentication/AuthForm';
 import { useAppDispatch } from '../../hooks/reduxHooks';
 import { setUser } from '../../store/slices/authSlice';
 import { Link, useNavigate } from 'react-router-dom';
-import { normalizeUser } from '../../helpers/normalizer';
 import { useAppSelector } from '../../hooks/reduxHooks';
 import { useEffect } from 'react';
 
@@ -24,7 +23,7 @@ export default function SignUp() {
     const handleSignup = async (username: string) => {
         await signup({ username });
         const user = await login({ username });
-        dispatch(setUser(normalizeUser(user)));
+        dispatch(setUser(user));
         navigate('/dashtest');
     };
 

@@ -8,14 +8,17 @@ import (
 
 // PostRoutes sets up the post routes
 func PostsRoutes(r *gin.Engine) {
+
+	postController := controllers.NewPostController()
+
 	postsRouter := r.Group("/posts") // Groups them under /posts
 	{
-		postsRouter.GET("/all", middleware.OptionalAuth, controllers.GetAllPosts)
-		postsRouter.GET("/topic/:slug", middleware.OptionalAuth, controllers.GetPostsByTopic)
-		postsRouter.GET("/id/:id", middleware.OptionalAuth, controllers.GetPost)
-		postsRouter.POST("/create/:slug", middleware.CheckAuth, controllers.CreatePost)
-		postsRouter.DELETE("/delete/:id", middleware.CheckAuth, controllers.DeletePost)
-		postsRouter.PUT("/update/:id", middleware.CheckAuth, controllers.UpdatePost)
-		postsRouter.PATCH("/pin/:id", middleware.CheckAuth, middleware.CheckAdmin, controllers.TogglePinPost)
+		postsRouter.GET("/all", middleware.OptionalAuth, postController.GetAllPosts)
+		postsRouter.GET("/topic/:slug", middleware.OptionalAuth, postController.GetPostsByTopic)
+		postsRouter.GET("/id/:id", middleware.OptionalAuth, postController.GetPost)
+		postsRouter.POST("/create/:slug", middleware.CheckAuth, postController.CreatePost)
+		postsRouter.DELETE("/delete/:id", middleware.CheckAuth, postController.DeletePost)
+		postsRouter.PUT("/update/:id", middleware.CheckAuth, postController.UpdatePost)
+		postsRouter.PATCH("/pin/:id", middleware.CheckAuth, middleware.CheckAdmin, postController.TogglePinPost)
 	}
 }

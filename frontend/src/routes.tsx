@@ -1,17 +1,14 @@
 import App from "./App"
 import ErrorPage from "./components/ErrorPage"
 import Home from "./pages/Home"
-import Dashboard from "./pages/Dashboard"
-import PostPage from "./pages/posts/PostPage"
-import CreatePost from "./pages/posts/CreatePostPage"
+import Dashboard from "./pages/dashboard/Dashboard"
+import PostPage from "./pages/posts/Post"
+import CreatePost from "./pages/posts/CreatePost"
 import AddTopic from "./pages/topics/CreateTopic"
 import Login from "./pages/auth/Login"
 import SignUp from "./pages/auth/SignUp"
-
-// Test Compoenents - Will be removed after development 
-import TestRedux from "./components/test/TestRedux"
-import AnotherComponent from "./components/test/AnotherComponent"
-import DashTest from "./components/test/DashTest"
+import ProfilePage from "./pages/profile/Profile"
+import { Navigate } from "react-router-dom"
 
 const routes = [
     {
@@ -44,14 +41,19 @@ const routes = [
                 ],
             },
 
-            // Testing 
+            // Profile 
             {
-                path: "test",
+                path: "profile",
                 children: [
-                    { index: true, element: <AnotherComponent /> },
-                    { path: "redux", element: <TestRedux /> },
-                    { path: "dash", element: <DashTest /> },
-                ],
+                    {
+                        index: true,
+                        element: <Navigate to="/posts" replace />
+                    },
+                    {
+                        path: ":username",
+                        element: <ProfilePage />
+                    }
+                ]
             },
         ],
     },

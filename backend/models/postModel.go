@@ -9,21 +9,21 @@ import (
 // https://gorm.io/docs/models.html
 // Read here for what Gorm Model provides
 type Post struct {
-	ID        string    `gorm:"type:uuid;primaryKey"`
-	TopicID   string    `gorm:"type:uuid;not null"`
-	AuthorID  string    `gorm:"type:uuid;not null"`
-	Topic     Topic     `gorm:"foreignKey:TopicID"`
-	Author    User      `gorm:"foreignKey:AuthorID"`
-	Title     string    `gorm:"type:varchar(255);not null"`
-	Content   string    `gorm:"type:text;not null"`
-	IsPinned  bool      `gorm:"default:false"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ImageUrl  *string    `gorm:"type:text"`
+	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
+	TopicID   string    `gorm:"type:uuid;not null" json:"topicId"`
+	AuthorID  string    `gorm:"type:uuid;not null" json:"authorId"`
+	Topic     Topic     `gorm:"foreignKey:TopicID" json:"topic,omitempty"`
+	Author    User      `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
+	Title     string    `gorm:"type:varchar(255);not null" json:"title"`
+	Content   string    `gorm:"type:text;not null" json:"content"`
+	IsPinned  bool      `gorm:"default:false" json:"isPinned"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	ImageUrl  *string   `gorm:"type:text" json:"imageUrl,omitempty"`
 
 	// Deletes any related field with cascade
-	Comments []Comment `gorm:"foreignKey:PostID;constraint:OnDelete:CASCADE"`
-	Votes    []Vote    `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE"`
+	Comments []Comment `gorm:"foreignKey:PostID;constraint:OnDelete:CASCADE" json:"comments,omitempty"`
+	Votes    []Vote    `gorm:"foreignKey:VotableID;constraint:OnDelete:CASCADE" json:"votes,omitempty"`
 }
 
 // https://gorm.io/docs/hooks.html

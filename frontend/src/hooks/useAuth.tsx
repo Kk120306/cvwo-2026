@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { setUser, logout } from '../store/slices/authSlice';
 import { useAppDispatch } from './reduxHooks';
-import { normalizeUser } from '../helpers/normalizer';
 
 // Function to determine if the user has been authenticated
 // Through the help of cookies passed to backend
@@ -27,7 +26,7 @@ export default function useAuth() {
             })
             .then((data: any) => {
                 if (data.user) { // if JSON contains user 
-                    dispatch(setUser(normalizeUser(data.user)));
+                    dispatch(setUser(data.user));
                 } else { // No user ie. invalid session 
                     dispatch(logout());
                 }

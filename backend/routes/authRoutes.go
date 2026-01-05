@@ -8,11 +8,14 @@ import (
 
 // AuthRoutes sets up the authentication routes
 func AuthRoutes(r *gin.Engine) {
+
+	authController := controllers.NewAuthController()
+	
 	authRouter := r.Group("/auth") // Groups them under /auth
 	{
-		authRouter.POST("/signup", controllers.Signup)
-		authRouter.POST("/login", controllers.Login)
-		authRouter.POST("/logout", controllers.Logout)
-		authRouter.GET("/validate", middleware.CheckAuth, controllers.Validate)
+		authRouter.POST("/signup", authController.Signup)
+		authRouter.POST("/login", authController.Login)
+		authRouter.POST("/logout", authController.Logout)
+		authRouter.GET("/validate", middleware.CheckAuth, authController.Validate)
 	}
 }

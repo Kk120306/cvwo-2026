@@ -8,11 +8,15 @@ import (
 
 // CommentRoutes set up the comment routes
 func CommentRoutes(r *gin.Engine) {
+
+	commentController := controllers.NewCommentController()
+
 	commentRouter := r.Group("/comments") // Groups them under /comments
 	{
-		commentRouter.GET("/post/:postId", middleware.OptionalAuth, controllers.GetCommentsByPost)
-		commentRouter.POST("/create/:postId", middleware.CheckAuth, controllers.CreateComment)
-		commentRouter.DELETE("/delete/:id", middleware.CheckAuth, controllers.DeleteComment)
-		commentRouter.PUT("/update/:id", middleware.CheckAuth, controllers.UpdateComment)
+		commentRouter.GET("/post/:postId", middleware.OptionalAuth, commentController.GetCommentsByPost)
+		commentRouter.POST("/create/:postId", middleware.CheckAuth, commentController.CreateComment)
+		commentRouter.DELETE("/delete/:id", middleware.CheckAuth, commentController.DeleteComment)
+		commentRouter.PUT("/update/:id", middleware.CheckAuth, commentController.UpdateComment)
+		commentRouter.PATCH("/pin/:id", middleware.CheckAuth, commentController.TogglePinComment)
 	}
 }

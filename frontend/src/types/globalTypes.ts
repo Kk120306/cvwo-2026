@@ -39,5 +39,18 @@ export interface Comment {
     dislikes: number
     author: User
     myVote?: "like" | "dislike" | null
+    isPinned : boolean
 }
 
+
+export interface UserProfile {
+    id: string;
+    username: string;
+    avatarUrl: string;
+    isAdmin: boolean;
+    postCount: number;
+    commentCount: number;
+    createdAt: string;
+    posts?: Post[];
+    comments?: Comment[];
+}

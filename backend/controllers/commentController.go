@@ -2,25 +2,26 @@ package controllers
 
 import (
 	"net/http"
-	"strings"
 
-	"github.com/Kk120306/cvwo-2026/backend/database"
 	"github.com/Kk120306/cvwo-2026/backend/models"
+	"github.com/Kk120306/cvwo-2026/backend/services"
 	"github.com/gin-gonic/gin"
-	"github.com/microcosm-cc/bluemonday"
-	"gorm.io/gorm"
 )
 
-// Struct for comments with vote counts
-type CommentWithVotes struct {
-	models.Comment
-	Likes    int64
-	Dislikes int64
-	MyVote   *string
+// CommentController handles HTTP requests for comments
+type CommentController struct {
+	commentService *services.CommentService
 }
 
-// func to get all comments under a certian post
-func GetCommentsByPost(c *gin.Context) {
+// NewCommentController creates a new instance of CommentController
+func NewCommentController() *CommentController {
+	return &CommentController{
+		commentService: services.NewCommentService(),
+	}
+}
+
+// func to get all comments under a certain post
+func (cc *CommentController) GetCommentsByPost(c *gin.Context) {
 	// Get postID from URL param
 	postID := c.Param("postId")
 	if postID == "" {
@@ -30,71 +31,20 @@ func GetCommentsByPost(c *gin.Context) {
 		return
 	}
 
-	// Create slice to hold comments
-	var comments []CommentWithVotes
-
 	// Check if user is authenticated
-	var userID string
-	var joinUserVote bool
+	var userID *string
 	u, exists := c.Get("user")
 	// If user is authenticated - we remember userID to join later
 	if exists {
 		user := u.(models.User)
-		userID = user.ID
-		joinUserVote = true
+		userID = &user.ID
 	}
 
-	// Even if user is not logged in we still want the likes and dislikes count for each comment
-	selectStr := `
-		comments.*,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-		COALESCE(SUM(CASE WHEN votes.vote_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-	`
-
-	// If user is logged in, we add the my_vote field which is used to show what vote the user has made
-	if joinUserVote {
-		selectStr += `,
-			MAX(user_votes.vote_type) AS my_vote`
-	}
-
-	// The query to pass
-	// For comments that belong to the postID, attach all votes that belong to each comment
-	// THen use selectStr to get the counts. Since LEFT JOIN is used, Coalesce is used in select str
-	query := database.DB.
-		Model(&models.Comment{}).
-		Select(selectStr).
-		Joins(`
-			LEFT JOIN votes 
-			ON votes.votable_id = comments.id 
-			AND votes.votable_type = 'comment'
-		`).
-		Where("comments.post_id = ?", postID)
-
-	// if user is logged in, combine a second join where we only want to join votes that belong to the user
-	if joinUserVote {
-		query = query.Joins(`
-			LEFT JOIN votes AS user_votes
-			ON user_votes.votable_id = comments.id
-			AND user_votes.votable_type = 'comment'
-			AND user_votes.user_id = ?
-		`, userID)
-	}
-
-	// Execute query
-	// Get any details about Author of comment
-	// Group so that there are no duplicate comments from Join
-	// So that for each comment we get the total and not each vote row
-	// Also for repeated in user_votes if user exists
-	result := query.
-		Preload("Author").
-		Group("comments.id").
-		Order("comments.created_at asc").
-		Find(&comments)
-
-	// If database error
-	if result.Error != nil {
+	// Get comments through service layer
+	comments, err := cc.commentService.GetCommentsByPost(postID, userID)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve comments",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -106,7 +56,7 @@ func GetCommentsByPost(c *gin.Context) {
 }
 
 // CreateComment creates a comment under a certain post
-func CreateComment(c *gin.Context) {
+func (cc *CommentController) CreateComment(c *gin.Context) {
 	// Get user from middleware with error handling
 	userInterface, exists := c.Get("user")
 	if !exists {
@@ -122,56 +72,41 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 
-	// Check if post exists
-	var post models.Post
-	if err := database.DB.First(&post, "id = ?", postID).Error; err != nil {
+	// Check if post exists through service layer
+	postExists, err := cc.commentService.PostExists(postID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	if !postExists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
 	var body struct {
-		Content  string
+		Content string `json:"content" binding:"required"`
 	}
 
-	err := c.ShouldBindJSON(&body)
+	err = c.ShouldBindJSON(&body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to read request body"})
 		return
 	}
 
-	// Validate content is not empty after trimming
-	if strings.TrimSpace(body.Content) == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Content cannot be empty"})
-		return
-	}
-
-	// Sanitize content from the rich text editor
-	// https://github.com/microcosm-cc/bluemonday - prevent XSS attacks
-	safeContent := bluemonday.UGCPolicy().Sanitize(body.Content)
-
-	// Create comment object
-	comment := models.Comment{
+	// Create comment through service layer
+	comment, err := cc.commentService.CreateComment(services.CreateCommentInput{
 		PostID:   postID,
 		AuthorID: user.ID,
-		Content:  safeContent,
-	}
+		Content:  body.Content,
+	})
 
-	// Insert into DB
-	createErr := database.DB.Create(&comment).Error
-	if createErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create comment"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Fetch the created comment with author
-	fetchErr := database.DB.Preload("Author").Where("id = ?", comment.ID).First(&comment).Error
-	if fetchErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch comment"})
-		return
-	}
-
-	// We do this cus retriving votes is more work and also it has been normlaized to the correct json structure of a Comment
-	// Since thats the only use case of ceating a comment
+	// We do this cus retrieving votes is more work and also it has been normalized to the correct json structure of a Comment
+	// Since thats the only use case of creating a comment
 	response := gin.H{
 		"comment": gin.H{
 			"id":        comment.ID,
@@ -197,7 +132,7 @@ func CreateComment(c *gin.Context) {
 }
 
 // Function to update comments only accessible by either the author or an admin
-func UpdateComment(c *gin.Context) {
+func (cc *CommentController) UpdateComment(c *gin.Context) {
 	// Get authenticated user from middleware
 	user := c.MustGet("user").(models.User)
 
@@ -210,26 +145,22 @@ func UpdateComment(c *gin.Context) {
 		return
 	}
 
-	// Find the comment in DB
-	var comment models.Comment
-	result := database.DB.First(&comment, "id = ?", commentID)
-
-	// If not found
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Comment not found",
-			})
-			return
+	// Find comment through service layer
+	comment, err := cc.commentService.FindCommentByID(commentID)
+	if err != nil {
+		// Determine status code based on error type
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "comment not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve comment",
+		c.JSON(statusCode, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	// check if user is permitted
-	if user.ID != comment.AuthorID && !user.IsAdmin {
+	// check if user is permitted through service layer
+	if !cc.commentService.CanUserModifyComment(&user, comment) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "You are not allowed to update this comment",
 		})
@@ -238,7 +169,7 @@ func UpdateComment(c *gin.Context) {
 
 	// Parse body
 	var body struct {
-		Content string
+		Content string `json:"content" binding:"required"`
 	}
 
 	// check body
@@ -249,11 +180,13 @@ func UpdateComment(c *gin.Context) {
 		return
 	}
 
-	// Update the content
-	save := database.DB.Model(&comment).Update("content", body.Content)
-	if save.Error != nil {
+	// Update comment through service layer
+	err = cc.commentService.UpdateComment(comment, services.UpdateCommentInput{
+		Content: body.Content,
+	})
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to update comment",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -265,7 +198,7 @@ func UpdateComment(c *gin.Context) {
 }
 
 // func to delete a comment, only available for author or admin
-func DeleteComment(c *gin.Context) {
+func (cc *CommentController) DeleteComment(c *gin.Context) {
 	// Get user from middleware
 	user := c.MustGet("user").(models.User)
 
@@ -278,53 +211,33 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 
-	// Find comment
-	var comment models.Comment
-	result := database.DB.First(&comment, "id = ?", commentID)
-
-	// If not found
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Comment not found",
-			})
-			return
+	// Find comment through service layer
+	comment, err := cc.commentService.FindCommentByID(commentID)
+	if err != nil {
+		// Determine status code based on error type
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "comment not found" {
+			statusCode = http.StatusBadRequest
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to retrieve comment",
+		c.JSON(statusCode, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	// check if permitted
-	if user.ID != comment.AuthorID && !user.IsAdmin {
+	// check if permitted through service layer
+	if !cc.commentService.CanUserModifyComment(&user, comment) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "You are not allowed to delete this comment",
 		})
 		return
 	}
 
-	// Transaction to delete votes and comment - ensures that every opeartion happns or none at all
-	// https://gorm.io/docs/transactions.html
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		// 1. Delete all votes on this comment (polymorphic relationship)
-		err := tx.Where("votable_id = ? AND votable_type = ?", commentID, "comment").Delete(&models.Vote{}).Error
-		if err != nil {
-			return err
-		}
-
-		// 2. Delete the comment itself
-		delErr := tx.Delete(&comment).Error
-		if delErr != nil {
-			return delErr
-		}
-
-		return nil
-	})
-
+	// Delete comment through service layer
+	err = cc.commentService.DeleteComment(comment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to delete comment",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -332,5 +245,74 @@ func DeleteComment(c *gin.Context) {
 	// Return success
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Comment deleted successfully",
+	})
+}
+
+// function that toggles comment pin / assumes the user is logged in
+func (cc *CommentController) TogglePinComment(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Please provide a valid comment ID",
+		})
+		return
+	}
+
+	var body struct {
+		IsPinned bool   `json:"isPinned" binding:"required"`
+		AuthorID string `json:"authorId" binding:"required"`
+	}
+
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read request body",
+		})
+		return
+	}
+
+	// Get the authenticated user from context
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User not authenticated",
+		})
+		return
+	}
+
+	authenticatedUser := user.(models.User)
+
+	// Find the comment through service layer
+	comment, err := cc.commentService.FindCommentByID(id)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "comment not found" {
+			statusCode = http.StatusNotFound
+		}
+		c.JSON(statusCode, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Check if the authenticated user is the author of the comment OR an admin through service layer
+	if !cc.commentService.CanUserModifyComment(&authenticatedUser, comment) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "You can only pin/unpin your own comments unless you are an admin",
+		})
+		return
+	}
+
+	// Update the pin status through service layer
+	err = cc.commentService.TogglePinComment(comment, body.IsPinned)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"comment": comment,
 	})
 }

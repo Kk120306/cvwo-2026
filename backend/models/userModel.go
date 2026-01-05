@@ -9,12 +9,12 @@ import (
 // https://gorm.io/docs/models.html
 // Read here for what Gorm Model provides
 type User struct {
-	ID                string `gorm:"type:uuid;primaryKey"`
-	Username          string `gorm:"uniqueIndex;not null"`
-	AvatarURL         string `gorm:"default:'https://localhost:3000/placeholder.png'"`
-	IsAdmin           bool   `gorm:"default:false"`
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
+	Username  string    `gorm:"uniqueIndex;not null" json:"username"`
+	AvatarURL string    `gorm:"default:'https://localhost:3000/placeholder.png'" json:"avatarURL"`
+	IsAdmin   bool      `gorm:"default:false" json:"isAdmin"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // https://gorm.io/docs/hooks.html
