@@ -33,7 +33,7 @@ jobs:
               run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
             - name: Build docker image 
-              run: docker build -t chicken78182/cvwo-backend .
+              run: docker build -t chicken78182/cvwo-backend ./backend
             
             - name: Push to docker hub
               run: docker push chicken78182/cvwo-backend:latest
