@@ -45,9 +45,9 @@ jobs:
               run: docker pull chicken78182/cvwo-backend:latest
             
             - name: Delete old container
-              run: docker rm -f backend-container
+              run: docker rm -f backend-container || true
 
             - name: Run docker container 
-              run: docker run -d -p 4040:4040 --name backend-container chicken78182/cvwo-backend
+              run: docker run -d --env-file .env -p 4040:4040 --name backend-container chicken78182/cvwo-backend
             
 
