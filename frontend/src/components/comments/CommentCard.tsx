@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type SetStateAction } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
     Card,
@@ -12,9 +12,8 @@ import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined"
 import { voteComment } from "../../api/handleVote"
 import { useAppSelector } from "../../hooks/reduxHooks"
 import type { Comment } from "../../types/globalTypes"
-import { deleteComment, manageCommentPin } from "../../api/handleComment"
+import { deleteComment } from "../../api/handleComment"
 import UpdateComment from "./CommentUpdate"
-import PushPinIcon from '@mui/icons-material/PushPin';
 
 
 // Componenet prop for each comment card. 
@@ -23,15 +22,13 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 // On update callback that updates the comment content in parent state
 interface CommentCardProps {
     comment: Comment
-    postAuthorId: string
-    onVoteUpdate: (commentId: string, likes: number, dislikes: number, myVote: "like" | "dislike" | null) => void
-    onDelete: (commentId: string) => void
-    onUpdate: (commentId: string, newContent: string) => void
-    setComments: Dispatch<SetStateAction<Comment[]>>
+    onVoteUpdate?: (commentId: string, likes: number, dislikes: number, myVote: "like" | "dislike" | null) => void
+    onDelete?: (commentId: string) => void
+    onUpdate?: (commentId: string, newContent: string) => void
 }
 
 // Comment card componenet 
-const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, setComments }: CommentCardProps) => {
+const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate }: CommentCardProps) => {
     const [isVoting, setIsVoting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
 
@@ -40,6 +37,7 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, 
 
     // Function to handle the vote of each comment 
     const handleVote = async (type: "like" | "dislike") => {
+        if (onVoteUpdate === undefined) return
         if (!user) {
             navigate("/login")
             return
@@ -60,6 +58,7 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, 
     }
 
     const handleDelete = async (commentId: string) => {
+        if (onDelete === undefined) return
         try {
             const confirmed = window.confirm("Are you sure you want to delete this Comment?")
             if (!confirmed) return
@@ -71,44 +70,10 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, 
         }
     }
 
-    const handlePin = async (commentId: string, isPinned: boolean, authorId: string) => {
-        try {
-            await manageCommentPin(commentId, isPinned, authorId);
-            setComments(prev =>
-                prev.map(c =>
-                    c.id === commentId
-                        ? { ...c, isPinned: isPinned }
-                        : c
-                )
-            )
-        } catch {
-            alert("Failed to update pin status")
-            return
-        }
-    }
-
 
     return (
         <Card sx={{ mb: 2 }}>
             <CardContent>
-                {(user?.isAdmin || postAuthorId === user?.id) && (
-                    <Box display="flex" alignItems="center" mb={1} gap={1}>
-                        <IconButton
-                            size="small"
-                            color={comment.isPinned ? "error" : "default"}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                handlePin(comment.id, !comment.isPinned, postAuthorId)
-                            }}
-                        >
-                            <PushPinIcon fontSize="small" />
-
-                        </IconButton>
-                        <Typography>
-                            {comment.isPinned ? "Pinned by Admin or OP" : "Click to Pin Comment"}
-                        </Typography>
-                    </Box>
-                )}
                 <Typography
                     variant="subtitle2"
                     color="text.secondary"
@@ -125,35 +90,37 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, 
                 />
 
                 {/* Voting */}
-                <Box mt={2} display="flex" gap={1} alignItems="center">
-                    <IconButton
-                        size="small"
-                        color={comment.myVote === "like" ? "primary" : "default"}
-                        onClick={() => handleVote("like")}
-                        disabled={isVoting}
-                    >
-                        <ThumbUpAltOutlinedIcon fontSize="small" />
-                    </IconButton>
+                {onVoteUpdate && (
+                    <Box mt={2} display="flex" gap={1} alignItems="center">
+                        <IconButton
+                            size="small"
+                            color={comment.myVote === "like" ? "primary" : "default"}
+                            onClick={() => handleVote("like")}
+                            disabled={isVoting}
+                        >
+                            <ThumbUpAltOutlinedIcon fontSize="small" />
+                        </IconButton>
 
-                    <Typography fontWeight={comment.myVote === "like" ? 600 : 400}>
-                        {comment.likes}
-                    </Typography>
+                        <Typography fontWeight={comment.myVote === "like" ? 600 : 400}>
+                            {comment.likes}
+                        </Typography>
 
-                    <IconButton
-                        size="small"
-                        color={comment.myVote === "dislike" ? "error" : "default"}
-                        onClick={() => handleVote("dislike")}
-                        disabled={isVoting}
-                    >
-                        <ThumbDownAltOutlinedIcon fontSize="small" />
-                    </IconButton>
+                        <IconButton
+                            size="small"
+                            color={comment.myVote === "dislike" ? "error" : "default"}
+                            onClick={() => handleVote("dislike")}
+                            disabled={isVoting}
+                        >
+                            <ThumbDownAltOutlinedIcon fontSize="small" />
+                        </IconButton>
 
-                    <Typography fontWeight={comment.myVote === "dislike" ? 600 : 400}>
-                        {comment.dislikes}
-                    </Typography>
-                </Box>
+                        <Typography fontWeight={comment.myVote === "dislike" ? 600 : 400}>
+                            {comment.dislikes}
+                        </Typography>
+                    </Box>
+                )}
                 <Box>
-                    {(user?.isAdmin || comment.author.id === user?.id) && (
+                    {((user?.isAdmin || comment.author.id === user?.id) && onDelete && onUpdate) && (
                         <Box>
                             <Typography
                                 variant="caption"
@@ -165,7 +132,7 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate, postAuthorId, 
                             >
                                 Delete Comment
                             </Typography>
-                            {isEditing ? (
+                            {(isEditing && onUpdate) ? (
                                 <UpdateComment
                                     commentId={comment.id}
                                     initialContent={comment.content}

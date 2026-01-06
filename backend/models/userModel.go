@@ -11,7 +11,7 @@ import (
 type User struct {
 	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
 	Username  string    `gorm:"uniqueIndex;not null" json:"username"`
-	AvatarURL string    `gorm:"default:'https://localhost:3000/placeholder.png'" json:"avatarURL"`
+	AvatarURL string    `gorm:"default:'https://d1nxlczpemry9k.cloudfront.net/829472_man_512x512.png'" json:"avatarUrl"`
 	IsAdmin   bool      `gorm:"default:false" json:"isAdmin"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

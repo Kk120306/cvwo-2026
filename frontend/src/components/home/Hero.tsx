@@ -8,7 +8,6 @@ const Hero = () => {
                 minHeight: "100vh",
                 display: "flex",
                 alignItems: "center",
-                background: "linear-gradient(135deg, #f5f5f5, #e9e9ff)",
             }}
         >
             <Container maxWidth="lg">
@@ -25,8 +24,7 @@ const Hero = () => {
                     </Typography>
 
                     <Typography variant="h6" color="text.secondary" maxWidth="sm">
-                        jfkdjsalfjkdsjaklfjdsajlfdjsakljfioewfjewipfjeoiwnfpkewnfnekwnf
-                        fdnslkajfkoejnweakonfkeansklfnwepijfipoew
+                        Discuss, learn, and grow with a community of passionate individuals.
                     </Typography>
                     
                     <Stack direction="row" spacing={2}>

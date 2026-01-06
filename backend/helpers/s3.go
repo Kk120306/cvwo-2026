@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-// config values - inside url values so no need to hide in env 
+// config values - inside url values so no need to hide in env
 const (
 	region     = "ap-southeast-2"
 	bucketName = "direct-upload-s3-cvwo"
@@ -21,7 +21,7 @@ const (
 // GenerateUploadURL creates a presigned S3 PUT URL
 // https://ronen-niv.medium.com/aws-s3-handling-presigned-urls-2718ab247d57
 func GenerateUploadURL() (string, error) {
-	// Create base context 
+	// Create base context
 	ctx := context.Background()
 
 	// Load AWS config from environment variables
@@ -46,9 +46,9 @@ func GenerateUploadURL() (string, error) {
 		return "", err
 	}
 	imageName := hex.EncodeToString(randomBytes)
-	// using crypt to secure random names 
+	// using crypt to secure random names
 
-	// Create e url with embedded credential 
+	// Create e url with embedded credential
 	// make sure it expires after 60 seconds
 	req, err := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
@@ -62,10 +62,9 @@ func GenerateUploadURL() (string, error) {
 	return req.URL, nil
 }
 
-
-// function to delete image from s3 and also invalidate cloudfront cache 
+// function to delete image from s3 and also invalidate cloudfront cache
 func DeleteImage(imageName string) error {
-	// generate context 
+	// generate context
 	ctx := context.Background()
 
 	// Load AWS config
@@ -86,7 +85,7 @@ func DeleteImage(imageName string) error {
 		Key:    aws.String(imageName),
 	})
 
-	// Invalidate cloudfront cache 
+	// Invalidate cloudfront cache
 	err = InvalidateCloudFrontCache(imageName)
 	if err != nil {
 		// Log the error but don't fail the request since S3 deletion succeeded

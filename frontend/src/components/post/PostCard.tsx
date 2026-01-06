@@ -31,24 +31,29 @@ export default function PostCard({ post, isAdmin, onVote, onPin }: PostCardProps
             onClick={() => navigate(`/posts/${post.id}`)}
         >
             <CardContent>
-                {/* Pin Section - Only for admins */}
-                {isAdmin && onPin && (
+                {/* Pin Section - Visible to all, toggle only for admins */}
+                {(post.isPinned || isAdmin) && (
                     <Box display="flex" alignItems="center" mb={1} gap={1}>
-                        <IconButton
-                            size="small"
-                            color={post.isPinned ? "error" : "default"}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onPin(post.id, !post.isPinned)
-                            }}
-                        >
-                            <PushPinIcon fontSize="small" />
-                        </IconButton>
+                        {isAdmin && onPin ? (
+                            <IconButton
+                                size="small"
+                                color={post.isPinned ? "error" : "default"}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onPin(post.id, !post.isPinned)
+                                }}
+                            >
+                                <PushPinIcon fontSize="small" />
+                            </IconButton>
+                        ) : (
+                            post.isPinned && <PushPinIcon fontSize="small" color="error" />
+                        )}
                         <Typography variant="caption">
                             {post.isPinned ? "Pinned by Admin" : "Click to Pin Post"}
                         </Typography>
                     </Box>
                 )}
+
 
                 {/* Image */}
                 {post.imageUrl && (
@@ -71,11 +76,11 @@ export default function PostCard({ post, isAdmin, onVote, onPin }: PostCardProps
                     <Typography variant="caption" color="text.secondary">
                         {post.topic.name}
                     </Typography>
-                    
-                        <Typography variant="caption" color="text.secondary">
-                            • Posted by {post.author.username}
-                        </Typography>
-                    
+
+                    <Typography variant="caption" color="text.secondary">
+                        • Posted by {post.author.username}
+                    </Typography>
+
                     <Tooltip title="Share">
                         <IconButton
                             onClick={(e) => {

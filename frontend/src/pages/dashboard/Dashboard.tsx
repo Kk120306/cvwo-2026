@@ -27,7 +27,7 @@ const DiscoverPage = () => {
     }, []);
 
     return (
-        <Container maxWidth="md">
+        <Container>
             <Typography variant="h4" fontWeight={600} mt={4} mb={2}>
                 Discover
             </Typography>

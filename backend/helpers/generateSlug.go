@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// converts title into a slug for topic 
+// converts title into a slug for topic
 func GenerateSlug(name string) string {
 	// lowercase
 	slug := strings.ToLower(name)
@@ -14,7 +14,7 @@ func GenerateSlug(name string) string {
 	slug = reg.ReplaceAllString(slug, "")
 	slug = strings.ReplaceAll(slug, " ", "-")
 	slug = regexp.MustCompile(`-+`).ReplaceAllString(slug, "-") // remove any continousou -
-	slug = strings.Trim(slug, "-") //  remove trailing dash
+	slug = strings.Trim(slug, "-")                              //  remove trailing dash
 
 	return slug
 }

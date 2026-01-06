@@ -5,7 +5,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 interface User {
     id: string;
     username: string;
-    avatarURL: string;
+    avatarUrl: string;
     isAdmin: boolean;
 }
 

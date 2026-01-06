@@ -35,7 +35,11 @@ const Navbar = () => {
                     to="/"
                     sx={{ textDecoration: "none", fontWeight: 700 }}
                 >
-                    My Application
+                    CVWO Blog
+                </Typography>
+
+                <Typography>
+                    For admin access login to "admin"
                 </Typography>
 
                 {!user ? (
@@ -63,12 +67,13 @@ const Navbar = () => {
                         <Avatar
                             component={Link}
                             to={`/profile/${user.username}`}
-                            src={user.avatarURL}
+                            src={user.avatarUrl}
                             alt={user.username}
                             sx={{ width: 32, height: 32 }}
                         />
                     </Box>
                 )}
+                
             </Toolbar>
         </AppBar>
     );

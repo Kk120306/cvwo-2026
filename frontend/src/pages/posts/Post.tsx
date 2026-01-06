@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import {
     Box,
     Typography,
@@ -8,6 +8,7 @@ import {
     Button,
     IconButton,
     Tooltip,
+    Container,
 } from "@mui/material"
 import ThumbUpAltOutlinedIcon from "@mui/icons-material/ThumbUpAltOutlined"
 import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined"
@@ -52,8 +53,12 @@ const PostPage = () => {
                 // since postRes returns an object get the post property 
                 setPost(postRes)
                 setComments(commentRes)
-            } catch (err: any) {
-                setError(err.message || "Failed to load post")
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err.message); 
+                } else {
+                    setError("Failed to load post"); 
+                }
             } finally {
                 setLoading(false)
             }
@@ -97,7 +102,7 @@ const PostPage = () => {
         } catch {
             console.error("Failed to delete post")
         } finally {
-            setLoading(false)   
+            setLoading(false)
         }
     }
 
@@ -155,159 +160,171 @@ const PostPage = () => {
     if (!post) return <Typography>No post found</Typography>
 
     return (
-        <Box mt={4} display="flex" flexDirection="column" alignItems="center">
-            <Card sx={{ width: "100%", maxWidth: 700 }}>
-                <CardContent>
-                    <Typography variant="h4" fontWeight={600} gutterBottom>
-                        {post.title}
-                    </Typography>
-
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        {post.topic?.name || "Unknown Topic"} • by {post.author?.username || "Unknown User"}
-                    </Typography>
-
-                    {/* Share button */}
-                    <Tooltip title="Share">
-                        <IconButton
-                            onClick={() => sharePost(post.id, post.title)}
-                            size="small"
-                        >
-                            <ShareIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
-
-                    {/* Will display the image directly from CDN if post has a image */}
-                    <Box>
-                        {post.imageUrl && (
-                            <Box
-                                component="img"
-                                src={post.imageUrl}
-                                alt="Post Image"
-                                sx={{
-                                    width: "100%",
-                                    maxHeight: 400,
-                                    objectFit: "cover",
-                                    borderRadius: 2,
-                                    my: 2,
-                                }}
-                            />
-                        )}
-                    </Box>
-
-                    <Typography
-                        variant="body1"
-                        dangerouslySetInnerHTML={{ __html: post.content }} // TipTap rich text editor content
-                    />
-
-                    {/* Voting */}
-                    <Box mt={2} display="flex" gap={1} alignItems="center">
-                        <IconButton
-                            size="small"
-                            color={post.myVote === "like" ? "primary" : "default"}
-                            onClick={() => {
-                                if (!user) {
-                                    navigate("/login")
-                                    return
-                                }
-                                handleVote("like")
-                            }}
-                        >
-                            <ThumbUpAltOutlinedIcon fontSize="small" />
-                        </IconButton>
-
-                        <Typography fontWeight={post.myVote === "like" ? 600 : 400}>
-                            {post.likes}
+        <Container sx={{ mt: 4, mb: 4 }}>
+            <Box mt={4} display="flex" flexDirection="column" alignItems="center" >
+                <Card sx={{ width: "100%" }}>
+                    <CardContent>
+                        <Typography variant="h4" fontWeight={600} gutterBottom>
+                            {post.title}
                         </Typography>
 
-                        <IconButton
-                            size="small"
-                            color={post.myVote === "dislike" ? "error" : "default"}
-                            onClick={() => {
-                                if (!user) {
-                                    navigate("/login")
-                                    return
-                                }
-                                handleVote("dislike")
-                            }}
-                        >
-                            <ThumbDownAltOutlinedIcon fontSize="small" />
-                        </IconButton>
-
-                        <Typography fontWeight={post.myVote === "dislike" ? 600 : 400}>
-                            {post.dislikes}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        {(user?.isAdmin || post.author?.id === user?.id) && (
-                            <Box>
-                                <Typography
-                                    variant="caption"
-                                    color="error"
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleDelete(post.id)
-                                    }}
-                                    sx={{ cursor: 'pointer', mr: 2 }}
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                            {post.topic?.name || 'Unknown Topic'} • by{' '}
+                            {post.author ? (
+                                <Link
+                                    to={`/profile/${post.author.username}`}
+                                    color="yellow"
+                                    style={{ textDecoration: 'none' }}
                                 >
-                                    Delete Post
-                                </Typography>
-                                {/* If user has clicked edit, shows a pop up component to edit post, not a new page */}
-                                {isEditing ? (
-                                    <UpdatePost
-                                        postId={post.id}
-                                        initialTitle={post.title}
-                                        initialContent={post.content}
-                                        initialImage={post.imageUrl}
-                                        onCancel={() => setIsEditing(false)}
-                                        newPost={(updatedPost: Post) => setPost(updatedPost)}
-                                    />
-                                ) : (
+                                    {post.author.username}
+                                </Link>
+                            ) : (
+                                'Unknown User'
+                            )}
+                        </Typography>
+
+
+                        {/* Share button */}
+                        <Tooltip title="Share">
+                            <IconButton
+                                onClick={() => sharePost(post.id, post.title)}
+                                size="small"
+                            >
+                                <ShareIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+
+                        {/* Will display the image directly from CDN if post has a image */}
+                        <Box>
+                            {post.imageUrl && (
+                                <Box
+                                    component="img"
+                                    src={post.imageUrl}
+                                    alt="Post Image"
+                                    sx={{
+                                        width: "100%",
+                                        maxHeight: 400,
+                                        objectFit: "cover",
+                                        borderRadius: 2,
+                                        my: 2,
+                                    }}
+                                />
+                            )}
+                        </Box>
+
+                        <Typography
+                            variant="body1"
+                            dangerouslySetInnerHTML={{ __html: post.content }} // TipTap rich text editor content
+                        />
+
+                        {/* Voting */}
+                        <Box mt={2} display="flex" gap={1} alignItems="center">
+                            <IconButton
+                                size="small"
+                                color={post.myVote === "like" ? "primary" : "default"}
+                                onClick={() => {
+                                    if (!user) {
+                                        navigate("/login")
+                                        return
+                                    }
+                                    handleVote("like")
+                                }}
+                            >
+                                <ThumbUpAltOutlinedIcon fontSize="small" />
+                            </IconButton>
+
+                            <Typography fontWeight={post.myVote === "like" ? 600 : 400}>
+                                {post.likes}
+                            </Typography>
+
+                            <IconButton
+                                size="small"
+                                color={post.myVote === "dislike" ? "error" : "default"}
+                                onClick={() => {
+                                    if (!user) {
+                                        navigate("/login")
+                                        return
+                                    }
+                                    handleVote("dislike")
+                                }}
+                            >
+                                <ThumbDownAltOutlinedIcon fontSize="small" />
+                            </IconButton>
+
+                            <Typography fontWeight={post.myVote === "dislike" ? 600 : 400}>
+                                {post.dislikes}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            {(user?.isAdmin || post.author?.id === user?.id) && (
+                                <Box>
                                     <Typography
                                         variant="caption"
-                                        color="primary"
-                                        onClick={() => setIsEditing(true)}
-                                        sx={{ cursor: 'pointer' }}
+                                        color="error"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDelete(post.id)
+                                        }}
+                                        sx={{ cursor: 'pointer', mr: 2 }}
                                     >
-                                        Update Post
+                                        Delete Post
                                     </Typography>
-                                )}
-                            </Box >
-                        )}
-                    </Box>
-                </CardContent>
-            </Card>
+                                    {/* If user has clicked edit, shows a pop up component to edit post, not a new page */}
+                                    {isEditing ? (
+                                        <UpdatePost
+                                            postId={post.id}
+                                            initialTitle={post.title}
+                                            initialContent={post.content}
+                                            initialImage={post.imageUrl}
+                                            onCancel={() => setIsEditing(false)}
+                                            newPost={(updatedPost: Post) => setPost(updatedPost)}
+                                        />
+                                    ) : (
+                                        <Typography
+                                            variant="caption"
+                                            color="primary"
+                                            onClick={() => setIsEditing(true)}
+                                            sx={{ cursor: 'pointer' }}
+                                        >
+                                            Update Post
+                                        </Typography>
+                                    )}
+                                </Box >
+                            )}
+                        </Box>
+                    </CardContent>
+                </Card>
 
-            {/* Add Comment */}
-            <Box mt={4} width="100%" maxWidth={700}>
-                <Typography variant="h6" gutterBottom>
-                    Add a comment
-                </Typography>
-                {/* Use Rich text editor component from tiptap */}
-                <RichTextEditor
-                    content={newComment}
-                    onChange={setNewComment}
+                {/* Add Comment */}
+                <Box mt={4} width="100%">
+                    <Typography variant="h6" gutterBottom>
+                        Add a comment
+                    </Typography>
+                    {/* Use Rich text editor component from tiptap */}
+                    <RichTextEditor
+                        content={newComment}
+                        onChange={setNewComment}
+                    />
+
+                    <Button
+                        variant="contained"
+                        sx={{ mt: 2 }}
+                        onClick={handleAddComment}
+                        disabled={submitting || !newComment.trim()}
+                    >
+                        {submitting ? "Posting..." : "Post Comment"}
+                    </Button>
+                </Box>
+
+                {/* Comments are shown through a component */}
+                <CommentList
+                    comments={comments}
+                    onVoteUpdate={handleCommentVoteUpdate}
+                    onDelete={handleCommentDelete}
+                    onUpdate={handleCommentUpdate}
                 />
-
-                <Button
-                    variant="contained"
-                    sx={{ mt: 2 }}
-                    onClick={handleAddComment}
-                    disabled={submitting || !newComment.trim()}
-                >
-                    {submitting ? "Posting..." : "Post Comment"}
-                </Button>
             </Box>
-
-            {/* Comments are shown through a component */}
-            <CommentList
-                comments={comments}
-                postAuthorId={post.author.id}
-                onVoteUpdate={handleCommentVoteUpdate}
-                onDelete={handleCommentDelete}
-                onUpdate={handleCommentUpdate}
-                setComments={setComments}
-            />
-        </Box>
+        </Container>
     )
 }
 

@@ -58,7 +58,7 @@ export default function PostList({ topic }: PostListProps) {
         const q = search.toLowerCase() // query
 
         // Filter posts
-        let filtered = posts.filter((post) =>
+        const filtered = posts.filter((post) =>
             post.title.toLowerCase().includes(q) ||
             post.content.toLowerCase().includes(q) ||
             post.author.username.toLowerCase().includes(q)

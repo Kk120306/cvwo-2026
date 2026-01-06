@@ -9,7 +9,7 @@ import (
 	"github.com/Kk120306/cvwo-2026/backend/helpers"
 )
 
-// Config struct for holding all configurations 
+// Config struct for holding all configurations
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
@@ -21,7 +21,7 @@ type Config struct {
 // ServerConfig holds server configuration
 type ServerConfig struct {
 	Port string
-	Env  string  // development or production 
+	Env  string // development or production
 }
 
 // DatabaseConfig holds database configuration

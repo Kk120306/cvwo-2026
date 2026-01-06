@@ -18,23 +18,23 @@ import type { Comment } from "../../types/globalTypes"
 // On delete is a callback to remove the comment from parent state
 interface CommentListProps {
     comments: Comment[]
-    postAuthorId: string
-    onVoteUpdate: (
+    postAuthorId?: string
+    onVoteUpdate?: (
         commentId: string,
         likes: number,
         dislikes: number,
         myVote: "like" | "dislike" | null
     ) => void
-    onDelete: (commentId: string) => void
-    onUpdate: (commentId: string, newContent: string) => void
-    setComments: Dispatch<SetStateAction<Comment[]>>
+    onDelete?: (commentId: string) => void
+    onUpdate?: (commentId: string, newContent: string) => void
+    setComments?: Dispatch<SetStateAction<Comment[]>>
 }
 
 // Different options for sorting 
 type SortOption = "recent" | "oldest" | "likes" | "dislikes"
 
 // Compoenent for comment list to be put in each post page 
-const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, postAuthorId, setComments }: CommentListProps) => {
+const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, setComments }: CommentListProps) => {
     const [search, setSearch] = useState("")
     const [sortBy, setSortBy] = useState<SortOption>("recent")
 
@@ -68,11 +68,7 @@ const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, postAuthorId,
 
         // Sort with pinned comments always at the top
         return [...filtered].sort((a, b) => {
-            // Pinned comments always come first
-            if (a.isPinned && !b.isPinned) return -1
-            if (!a.isPinned && b.isPinned) return 1
-
-            // If both pinned or both not pinned, use selected sort option
+            // use selected sort option
             switch (sortBy) {
                 case "likes":
                     return b.likes - a.likes
@@ -88,13 +84,13 @@ const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, postAuthorId,
     }, [normalizedComments, search, sortBy])
 
     return (
-        <Box mt={4} width="100%" maxWidth={700}>
+        <Box mt={4} width="100%" >
             <Typography variant="h5" gutterBottom>
                 Comments ({comments.length})
             </Typography>
 
             {/* Search and Sort Controls */}
-            {comments.length > 0 && (
+            {(comments.length > 0 && setComments ) && (
                 <Box display="flex" gap={2} mb={3}>
                     <TextField
                         placeholder="Search comments..."
@@ -129,12 +125,10 @@ const CommentList = ({ comments, onVoteUpdate, onDelete, onUpdate, postAuthorId,
             ) : (filteredAndSortedComments.map((comment) => (
                 <CommentCard
                     key={comment.id}
-                    postAuthorId={postAuthorId}
                     comment={comment}
                     onVoteUpdate={onVoteUpdate}
                     onDelete={onDelete}
                     onUpdate={onUpdate}
-                    setComments={setComments}
                 />
             )))}
         </Box>

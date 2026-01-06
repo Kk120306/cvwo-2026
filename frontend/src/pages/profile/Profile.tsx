@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getUserProfile } from '../../api/handleUser';
 import type { UserProfile } from '../../types/globalTypes';
 import PostCard from '../../components/post/PostCard';
+import CommentList from '../../components/comments/CommentList';
 
 const ProfilePage = () => {
     const { username } = useParams<{ username: string }>();
@@ -26,8 +27,13 @@ const ProfilePage = () => {
 
                 const data = await getUserProfile(username, true, true);
                 setUser(data);
-            } catch (err: any) {
-                setError(err.message || "Failed to load user profile");
+                console.log(data.avatarUrl);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err.message); 
+                } else {
+                    setError("Failed to load user profile"); 
+                }
             } finally {
                 setLoading(false);
             }
@@ -61,7 +67,7 @@ const ProfilePage = () => {
     }
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Container sx={{ mt: 4, mb: 4 }}>
             <Card>
                 <CardContent>
                     {/* Header Section */}
@@ -71,7 +77,6 @@ const ProfilePage = () => {
                             alt={user.username}
                             sx={{ width: 80, height: 80 }}
                         >
-                            jfljkljl
                         </Avatar>
 
                         <Box sx={{ flex: 1 }}>
@@ -130,6 +135,20 @@ const ProfilePage = () => {
                 ) : (
                     <Typography>No posts to display.</Typography>
                 )}
+
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h5" gutterBottom>
+                        Comments by {user.username}
+                    </Typography>
+                    {user.comments && user.comments.length > 0 ? (
+                        console.log(user.comments),
+                        <CommentList
+                            comments={user.comments}
+                        />
+                    ) : (
+                        <Typography>No Comments to display.</Typography>
+                    )}
+                </Box>
             </Box>
         </Container>
     );

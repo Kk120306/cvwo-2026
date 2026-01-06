@@ -120,6 +120,7 @@ export async function updatePost(postData: { title: string; content: string, pos
 // function that changes the pin status of a post 
 export async function managePostPin(postId: string, isPinned: boolean) {
     const endpoint = `${baseUrl}/posts/pin/${postId}`;
+    console.log(endpoint);
 
     const res = await fetch(endpoint, {
         method: "PATCH",

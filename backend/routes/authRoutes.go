@@ -10,7 +10,7 @@ import (
 func AuthRoutes(r *gin.Engine) {
 
 	authController := controllers.NewAuthController()
-	
+
 	authRouter := r.Group("/auth") // Groups them under /auth
 	{
 		authRouter.POST("/signup", authController.Signup)

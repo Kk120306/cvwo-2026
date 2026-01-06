@@ -39,7 +39,6 @@ export interface Comment {
     dislikes: number
     author: User
     myVote?: "like" | "dislike" | null
-    isPinned : boolean
 }
 
 

@@ -32,8 +32,12 @@ const AddTopic = () => {
             await createTopic(formatTopicName(name));
             setName("");
             navigate(-1);
-        } catch (err: any) {
-            console.log(err.message || "Failed to create topic");
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                console.log(err.message);
+            } else {
+                console.log("Failed to create topic");
+            }
         }
     };
 

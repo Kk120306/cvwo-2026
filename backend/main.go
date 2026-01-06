@@ -10,7 +10,7 @@ func main() {
 	// Create new application instance
 	application := app.New()
 
-	// Initialize application 
+	// Initialize application
 	application.Initialize()
 
 	// Run server

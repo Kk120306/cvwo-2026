@@ -58,6 +58,7 @@ func (s *UserService) GetUserPosts(userID string) ([]models.Post, error) {
 	err := database.DB.
 		Select("id", "title", "content", "topic_id", "author_id", "is_pinned", "created_at", "updated_at", "image_url").
 		Preload("Topic").
+		Preload("Author").
 		Where("author_id = ?", userID).
 		Order("created_at DESC").
 		Find(&posts).Error
@@ -75,6 +76,7 @@ func (s *UserService) GetUserComments(userID string) ([]models.Comment, error) {
 	err := database.DB.
 		Select("id", "post_id", "author_id", "content", "is_pinned", "created_at", "updated_at").
 		Where("author_id = ?", userID).
+		Preload("Author").
 		Order("created_at DESC").
 		Find(&comments).Error
 

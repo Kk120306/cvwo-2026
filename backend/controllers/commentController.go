@@ -124,7 +124,6 @@ func (cc *CommentController) CreateComment(c *gin.Context) {
 			"likes":    0,
 			"dislikes": 0,
 			"myVote":   nil,
-			"isPinned": comment.IsPinned,
 		},
 	}
 
@@ -245,74 +244,5 @@ func (cc *CommentController) DeleteComment(c *gin.Context) {
 	// Return success
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Comment deleted successfully",
-	})
-}
-
-// function that toggles comment pin / assumes the user is logged in
-func (cc *CommentController) TogglePinComment(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Please provide a valid comment ID",
-		})
-		return
-	}
-
-	var body struct {
-		IsPinned bool   `json:"isPinned" binding:"required"`
-		AuthorID string `json:"authorId" binding:"required"`
-	}
-
-	err := c.ShouldBindJSON(&body)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read request body",
-		})
-		return
-	}
-
-	// Get the authenticated user from context
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
-		return
-	}
-
-	authenticatedUser := user.(models.User)
-
-	// Find the comment through service layer
-	comment, err := cc.commentService.FindCommentByID(id)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if err.Error() == "comment not found" {
-			statusCode = http.StatusNotFound
-		}
-		c.JSON(statusCode, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	// Check if the authenticated user is the author of the comment OR an admin through service layer
-	if !cc.commentService.CanUserModifyComment(&authenticatedUser, comment) {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "You can only pin/unpin your own comments unless you are an admin",
-		})
-		return
-	}
-
-	// Update the pin status through service layer
-	err = cc.commentService.TogglePinComment(comment, body.IsPinned)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"comment": comment,
 	})
 }

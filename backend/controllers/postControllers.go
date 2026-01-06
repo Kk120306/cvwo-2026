@@ -279,9 +279,9 @@ func (pc *PostController) TogglePinPost(c *gin.Context) {
 		return
 	}
 
-	// Parse request body to get desired pin state
+	// Parse request body to get  pin state
 	var body struct {
-		IsPinned bool `json:"isPinned" binding:"required"`
+		IsPinned bool `json:"isPinned"`
 	}
 
 	err := c.ShouldBindJSON(&body)

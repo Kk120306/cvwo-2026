@@ -1,12 +1,11 @@
 package database
 
-
 import (
 	"fmt"
+	"github.com/Kk120306/cvwo-2026/backend/helpers"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
-	"github.com/Kk120306/cvwo-2026/backend/helpers"
 )
 
 var DB *gorm.DB

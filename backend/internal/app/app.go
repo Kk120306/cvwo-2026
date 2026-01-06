@@ -28,7 +28,7 @@ func New() *App {
 	cfg := config.Load()
 
 	// Validate configuration
-	err := cfg.Validate() 
+	err := cfg.Validate()
 	if err != nil {
 		log.Fatal("Invalid configuration:", err)
 	}
@@ -100,7 +100,7 @@ func (a *App) Run() {
 	}
 
 	// Start server in a goroutine
-	// ensures that server dosent block graceful shutdown handling 
+	// ensures that server dosent block graceful shutdown handling
 	go func() {
 		log.Printf("Starting server on port %s in %s mode", a.Config.Server.Port, a.Config.Server.Env)
 		err := srv.ListenAndServe()
@@ -109,8 +109,7 @@ func (a *App) Run() {
 		}
 	}()
 
-
-	// Gracefull shutdown 
+	// Gracefull shutdown
 	// https://medium.com/@kittipat_1413/graceful-shutdown-in-golang-gin-a-complete-guide-130e3f075415
 
 	// Wait for interrupt signal for graceful shutdown

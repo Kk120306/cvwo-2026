@@ -1,6 +1,5 @@
 import App from "./App"
 import ErrorPage from "./components/ErrorPage"
-import Home from "./pages/Home"
 import Dashboard from "./pages/dashboard/Dashboard"
 import PostPage from "./pages/posts/Post"
 import CreatePost from "./pages/posts/CreatePost"
@@ -17,7 +16,7 @@ const routes = [
         errorElement: <ErrorPage />,
         children: [
             // Home
-            { index: true, element: <Home /> },
+            { index: true, element: <Dashboard /> },
 
             // Auth
             { path: "login", element: <Login /> },
@@ -27,7 +26,10 @@ const routes = [
             {
                 path: "posts",
                 children: [
-                    { index: true, element: <Dashboard /> },
+                    {
+                        index: true,
+                        element: <Navigate to="/" replace />
+                    },
                     { path: "create", element: <CreatePost /> },
                     { path: ":id", element: <PostPage /> },
                 ],

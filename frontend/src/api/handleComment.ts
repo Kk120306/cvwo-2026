@@ -114,24 +114,3 @@ export async function voteComment(commentId: string, type: "like" | "dislike") {
     const data = await res.json()
     return data
 }
-
-export async function manageCommentPin(commentId: string, pin: boolean, authorId: string) {
-    const endpoint = `${baseUrl}/comments/pin/${commentId}`
-
-    const res = await fetch(endpoint, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ pin, authorId }),
-    });
-
-    if (!res.ok) {
-        toast.error(`Failed to ${pin ? "pin" : "unpin"} post`);
-        throw new Error(`Failed to ${pin ? "pin" : "unpin"} post`);
-    }
-
-    toast.success(`Post ${pin ? "pinned" : "unpinned"} successfully`);
-    return true;
-}

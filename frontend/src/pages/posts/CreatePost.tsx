@@ -22,26 +22,32 @@ const CreatePostPage = () => {
 
     const navigate = useNavigate()
 
-    // If the user is not found in state, redirects them to signup
+    // Redirect unauthenticated users
     useEffect(() => {
         if (!user) navigate('/signup');
     }, [user, navigate]);
 
-    if (!user) return <p>Loading...</p>;
-
-    // Loads all topics that exist currently
+    // Load topics
     useEffect(() => {
+        if (!user) return; 
+
         const loadTopics = async () => {
             try {
-                const data: Topic[] = await fetchAllTopics()
-                setTopics([...data])
+                const data: Topic[] = await fetchAllTopics();
+                setTopics(data);
             } catch {
-                console.error('Failed to load topics')
+                console.error('Failed to load topics');
             }
-        }
+        };
 
-        loadTopics()
-    }, [])
+        loadTopics();
+    }, [user]);
+
+
+    if (!user) {
+        return <p>Loading...</p>;
+    }
+
 
     // handles the submission of the post
     const handleSubmit = async () => {
@@ -65,7 +71,7 @@ const CreatePostPage = () => {
     }
 
     return (
-        <Box maxWidth={600} mx="auto" mt={4}>
+        <Box mx="auto" mt={4}>
             <Typography variant="h4" mb={2}>Create Post</Typography>
 
             <TextField

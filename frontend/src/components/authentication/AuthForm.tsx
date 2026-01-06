@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
 import {
     Box,
     Typography,
@@ -27,12 +26,12 @@ export default function AuthForm({ heading, buttonLabel, onSubmit, extraLink }: 
         try {
             await onSubmit(username);
         } catch {
-            toast.error('Something went wrong');
+            console.error('Error during form submission');
         }
     };
 
     return (
-        <Container maxWidth="sm">
+        <Container>
             <Box
                 sx={{
                     marginTop: 8,

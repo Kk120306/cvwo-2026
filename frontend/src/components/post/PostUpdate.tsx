@@ -94,7 +94,7 @@ const UpdatePost = ({ postId, initialTitle, initialContent, initialImage, onCanc
             <TextField
                 label="Title"
                 value={title}
-                onChange={(e: any) => setTitle(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                 fullWidth
             />
             <RichTextEditor content={content} onChange={setContent} />

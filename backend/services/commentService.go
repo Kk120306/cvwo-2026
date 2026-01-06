@@ -206,18 +206,6 @@ func (s *CommentService) DeleteComment(comment *models.Comment) error {
 	return nil
 }
 
-// TogglePinComment toggles the pin status of a comment
-func (s *CommentService) TogglePinComment(comment *models.Comment, isPinned bool) error {
-	// Update the pin status
-	comment.IsPinned = isPinned
-	err := database.DB.Save(comment).Error
-	if err != nil {
-		return errors.New("failed to update comment")
-	}
-
-	return nil
-}
-
 // CanUserModifyComment checks if a user has permission to modify a comment
 func (s *CommentService) CanUserModifyComment(user *models.User, comment *models.Comment) bool {
 	// check if user is permitted (either author or admin)

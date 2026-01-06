@@ -23,7 +23,7 @@ export async function signup({ username }: AuthProps) {
 
     if (!res.ok) {
         const err = await res.json();
-        toast.error(err.message || 'Signup failed');
+        toast.error(err.message || 'Signup failed, this username may already be taken.');
         throw new Error(err.message || 'Signup failed');
 
     }
@@ -47,7 +47,7 @@ export async function login({ username }: AuthProps) {
 
     if (!res.ok) {
         const err = await res.json();
-        toast.error(err.message || 'Login failed');
+        toast.error(err.message || 'Login failed, Please make sure the username is correct.');
         throw new Error(err.message || 'Login failed, Please try again.');
     }
 

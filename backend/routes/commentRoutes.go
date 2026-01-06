@@ -17,6 +17,5 @@ func CommentRoutes(r *gin.Engine) {
 		commentRouter.POST("/create/:postId", middleware.CheckAuth, commentController.CreateComment)
 		commentRouter.DELETE("/delete/:id", middleware.CheckAuth, commentController.DeleteComment)
 		commentRouter.PUT("/update/:id", middleware.CheckAuth, commentController.UpdateComment)
-		commentRouter.PATCH("/pin/:id", middleware.CheckAuth, commentController.TogglePinComment)
 	}
 }

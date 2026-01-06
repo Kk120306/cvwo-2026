@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastProvider from './components/provider/ToastProvider'
+import { Container } from '@mui/material'
 
 
 function App() {
@@ -16,7 +17,9 @@ function App() {
         <div>
             <ToastProvider />
             <Navbar />
-            <Outlet />
+            <Container maxWidth="md" sx={{ mt: 4, mb: 4, minHeight: '80vh' }}>
+                <Outlet />
+            </Container>
             <Footer />
         </div>
     )

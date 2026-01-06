@@ -15,8 +15,7 @@ type Comment struct {
 	Post   Post `gorm:"foreignKey:PostID" json:"post,omitempty"`
 	Author User `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
 
-	Content  string `gorm:"type:text;not null" json:"content"`
-	IsPinned bool   `gorm:"default:false" json:"isPinned"`
+	Content string `gorm:"type:text;not null" json:"content"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

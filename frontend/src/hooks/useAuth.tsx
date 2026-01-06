@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react';
 import { setUser, logout } from '../store/slices/authSlice';
 import { useAppDispatch } from './reduxHooks';
 
+interface ValidateAuthResponse {
+    user?: {
+        id: string;
+        username: string;
+        role: string;
+        avatarUrl: string;
+        isAdmin: boolean;
+    };
+}
+
 // Function to determine if the user has been authenticated
 // Through the help of cookies passed to backend
 export default function useAuth() {
@@ -24,7 +34,7 @@ export default function useAuth() {
                 if (!text) throw new Error('Empty response'); // If res body is empty, session invalid 
                 return JSON.parse(text);
             })
-            .then((data: any) => {
+            .then((data: ValidateAuthResponse) => {
                 if (data.user) { // if JSON contains user 
                     dispatch(setUser(data.user));
                 } else { // No user ie. invalid session 

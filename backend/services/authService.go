@@ -24,7 +24,6 @@ type AuthInput struct {
 	Username string `json:"username" binding:"required"`
 }
 
-
 // UserResponse represents the sanitized user data returned to clients
 type UserResponse struct {
 	ID        string `json:"id"`
