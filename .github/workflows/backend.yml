@@ -8,7 +8,6 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-
         steps:
             - name: Checkout Source
               uses: actions/checkout@v4
@@ -29,25 +28,24 @@ jobs:
                   echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
                   echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> .env
 
-            - name: Login to docker hub
+            - name: Login to Docker Hub
               run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 
-            - name: Build docker image 
+            - name: Build Docker image
               run: docker build -t chicken78182/cvwo-backend ./backend
-            
-            - name: Push to docker hub
+
+            - name: Push Docker image
               run: docker push chicken78182/cvwo-backend:latest
+
     deploy:
         needs: build
         runs-on: self-hosted
         steps:
-            - name: Pull docker image
+            - name: Pull Docker image
               run: docker pull chicken78182/cvwo-backend:latest
-            
+
             - name: Delete old container
               run: docker rm -f backend-container || true
 
-            - name: Run docker container 
-              run: docker run -d --env-file .env -p 4040:4040 --name backend-container chicken78182/cvwo-backend
-            
-
+            - name: Run Docker container
+              run: docker run -d --env-file $GITHUB_WORKSPACE/.env -p 4040:4040 --name backend-container chicken78182/cvwo-backend
