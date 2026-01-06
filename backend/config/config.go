@@ -78,13 +78,14 @@ func Load() *Config {
 	// for individual parts, have to build it into a URL
 	if dbConfig.URL == "" && dbConfig.Host != "" {
 		dbConfig.URL = fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s channel_binding=%s",
 			dbConfig.Host,
 			dbConfig.User,
 			dbConfig.Password,
 			dbConfig.Name,
 			dbConfig.Port,
 			dbConfig.SSLMode,
+			dbConfig.ChannelBinding,
 		)
 	}
 
