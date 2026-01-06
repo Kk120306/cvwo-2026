@@ -95,7 +95,7 @@ func (a *App) setupRoutes() {
 func (a *App) Run() {
 	// Create server
 	srv := &http.Server{
-		Addr:    ":" + a.Config.Server.Port,
+		Addr:    "0.0.0.0:" + a.Config.Server.Port,
 		Handler: a.Router,
 	}
 
