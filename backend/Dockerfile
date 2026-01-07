@@ -23,3 +23,4 @@ EXPOSE 4040
 
 # Final command to run 
 CMD ["./main"]
+ENV GOMEMLIMIT=100MiB
