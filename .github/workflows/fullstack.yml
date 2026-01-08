@@ -3,7 +3,7 @@ name: Deploy Full Stack Application
 on:
     push:
         branches:
-            - main  # Change to your branch name for testing
+            - main 
 
 jobs:
     build-backend:
