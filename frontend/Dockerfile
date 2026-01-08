@@ -6,13 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including dev deps for building)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the app (this works for Vite, CRA, or any React setup)
+# Build the app
 RUN npm run build
 
 # Production stage
