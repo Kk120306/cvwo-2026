@@ -68,16 +68,16 @@ jobs:
                   docker pull chicken78182/cvwo-frontend:latest
 
             - name: Stop and remove old containers
-              run: docker-compose down || true
-
+              run: docker compose down || true
+                
             - name: Start containers with Docker Compose
-              run: docker-compose --env-file .env up -d
-
+              run: docker compose --env-file .env up -d
+                
             - name: Show running containers
-              run: docker-compose ps
-
+              run: docker compose ps
+                
             - name: Show logs
-              run: docker-compose logs --tail=50
+              run: docker compose logs --tail=50
 
             - name: Clean up
               run: |
