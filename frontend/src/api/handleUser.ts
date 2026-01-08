@@ -1,7 +1,7 @@
 
 import type { UserProfile } from "../types/globalTypes";
 
-const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+const baseUrl = '/api';
 
 export async function getUserProfile(username: string, includePosts = false, includeComments = false) {
     const params = new URLSearchParams();

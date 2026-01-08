@@ -1,6 +1,6 @@
 import { toast } from "react-hot-toast"
 
-const baseUrl = import.meta.env.VITE_BACKEND_HOST
+const baseUrl = '/api';
 
 // function to get all comments under a post with postId
 export async function getPostComment(postId: string) {

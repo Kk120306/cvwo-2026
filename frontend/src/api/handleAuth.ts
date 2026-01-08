@@ -5,7 +5,7 @@ interface AuthProps {
     username: string;
 }
 
-const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+const baseUrl = '/api';
 
 // Function to handle user signup with the backend API 
 // Calls post /auth/signup endpoint

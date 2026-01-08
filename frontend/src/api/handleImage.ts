@@ -1,4 +1,4 @@
-const baseUrl = import.meta.env.VITE_BACKEND_HOST
+const baseUrl = '/api';
 
 // Function that returns a presigned s3 url for uploading an image to the s3 bucket 
 export async function getS3Url() {

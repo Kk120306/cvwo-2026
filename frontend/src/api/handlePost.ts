@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast";
 
 
-const baseUrl = import.meta.env.VITE_BACKEND_HOST;
+const baseUrl = '/api';
 
 // function that fetches posts based on topic from api 
 export async function fetchPostByTopic(topicSlug: string) {

@@ -27,7 +27,7 @@ export default function useAuth() {
     // If invalid, logs out the user by clearing the store
     // Use effect used to make sure it runs on apps first load, we add dependency on dispatch
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/validate`, { credentials: 'include' })
+        fetch(`/api/auth/validate`, { credentials: 'include' })
             .then(async (res) => {
                 if (!res.ok) throw new Error('Failed to validate'); // If non-200 response
                 const text = await res.text();

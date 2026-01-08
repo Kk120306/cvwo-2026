@@ -1,6 +1,6 @@
 import { toast } from "react-hot-toast";
 
-const baseUrl = import.meta.env.VITE_BACKEND_HOST
+const baseUrl = '/api';
 
 // Function that modifies a users vote on a post
 export async function votePost(
