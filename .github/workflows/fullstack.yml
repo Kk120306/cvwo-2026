@@ -71,7 +71,7 @@ jobs:
               run: docker compose down || true
                 
             - name: Start containers with Docker Compose
-              run: docker-compose up -d
+              run: docker compose up -d
 
             - name: Show running containers
               run: docker compose ps
