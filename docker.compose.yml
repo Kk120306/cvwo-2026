@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    image: chicken78182/cvwo-backend:latest
+    container_name: backend-container
+    ports:
+      - "4040:4040"
+    environment:
+      - PORT=${PORT}
+      - ENV=${ENV}
+      - GIN_MODE=release
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_SSLMODE=${DB_SSLMODE}
+      - DB_CHANNEL_BINDING=${DB_CHANNEL_BINDING}
+      - SECRET=${SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - CLOUDFRONT_DISTRIBUTION_ID=${CLOUDFRONT_DISTRIBUTION_ID}
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    image: chicken78182/cvwo-frontend:latest
+    container_name: frontend-container
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
