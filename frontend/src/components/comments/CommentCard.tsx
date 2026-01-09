@@ -129,8 +129,9 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate }: CommentCardP
                                     e.stopPropagation()
                                     handleDelete(comment.id)
                                 }}
+                                sx={{ cursor: 'pointer' }}
                             >
-                                Delete Comment
+                                Delete
                             </Typography>
                             {(isEditing && onUpdate) ? (
                                 <UpdateComment
@@ -152,7 +153,7 @@ const CommentCard = ({ comment, onVoteUpdate, onDelete, onUpdate }: CommentCardP
                                     }}
                                     sx={{ cursor: 'pointer' }}
                                 >
-                                    Update Comment
+                                    Update
                                 </Typography>
                             )}
                         </Box>

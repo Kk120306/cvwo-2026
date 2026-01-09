@@ -267,7 +267,7 @@ const PostPage = () => {
                                         }}
                                         sx={{ cursor: 'pointer', mr: 2 }}
                                     >
-                                        Delete Post
+                                        Delete 
                                     </Typography>
                                     {/* If user has clicked edit, shows a pop up component to edit post, not a new page */}
                                     {isEditing ? (
@@ -286,7 +286,7 @@ const PostPage = () => {
                                             onClick={() => setIsEditing(true)}
                                             sx={{ cursor: 'pointer' }}
                                         >
-                                            Update Post
+                                            Update
                                         </Typography>
                                     )}
                                 </Box >
