@@ -20,7 +20,7 @@ export async function getS3Url() {
         }
 
         const data = await response.json();
-        return data.upload_url;
+        return data.uploadUrl;
     } catch (error) {
         console.error('Error fetching S3 URL:', error);
         throw error;

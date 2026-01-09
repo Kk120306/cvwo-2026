@@ -69,7 +69,7 @@ const PostPage = () => {
     // Function that handles post voting
     const handleVote = async (type: "like" | "dislike") => {
         if (!post) return
-
+        
         const res = await votePost(post.id, type)
 
         // Takes most recent post state and updates vote info with likes, dislikes, myVote

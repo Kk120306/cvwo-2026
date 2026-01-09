@@ -13,6 +13,7 @@ import type { Post } from "../../types/globalTypes"
 import { votePost } from "../../api/handleVote"
 import { useAppSelector } from "../../hooks/reduxHooks";
 import PostCard from "../post/PostCard"
+import { useNavigate } from "react-router-dom";
 
 // Props for PostList component
 interface PostListProps {
@@ -31,6 +32,7 @@ export default function PostList({ topic }: PostListProps) {
     const [error, setError] = useState("")
 
     const user = useAppSelector(state => state.auth.user)
+    const navigate = useNavigate();
 
     // On topic change, goes and retrives post under topic 
     useEffect(() => {
@@ -87,6 +89,10 @@ export default function PostList({ topic }: PostListProps) {
 
     // Hnadle voting on a post 
     const handleVote = async (postId: string, type: "like" | "dislike") => {
+        if (!user) {
+            navigate("/login")
+        }
+
         const res = await votePost(postId, type) // Call API to vote 
 
 

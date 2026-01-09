@@ -43,34 +43,36 @@ jobs:
             - name: Checkout Source
               uses: actions/checkout@v4
 
+            # Storage is limited so clean up required
             - name: Clean up Docker before deployment
               run: |
-                docker system prune -a -f
-                docker volume prune -f
+                  docker system prune -a -f
+                  docker volume prune -f
 
+            #  EOF making it quicker to create
             - name: Create .env file
               run: |
-                cat > .env << EOF
-                PORT=${{ secrets.PORT }}
-                ENV=${{ secrets.ENV }}
-                DB_HOST=${{ secrets.DB_HOST }}
-                DB_PORT=${{ secrets.DB_PORT }}
-                DB_USER=${{ secrets.DB_USER }}
-                DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                DB_NAME=${{ secrets.DB_NAME }}
-                DB_SSLMODE=${{ secrets.DB_SSLMODE }}
-                DB_CHANNEL_BINDING=${{ secrets.DB_CHANNEL_BINDING }}
-                SECRET=${{ secrets.SECRET }}
-                FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-                AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-                AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-                EOF
+                  cat > .env << EOF
+                  PORT=${{ secrets.PORT }}
+                  ENV=${{ secrets.ENV }}
+                  DB_HOST=${{ secrets.DB_HOST }}
+                  DB_PORT=${{ secrets.DB_PORT }}
+                  DB_USER=${{ secrets.DB_USER }}
+                  DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  DB_NAME=${{ secrets.DB_NAME }}
+                  DB_SSLMODE=${{ secrets.DB_SSLMODE }}
+                  DB_CHANNEL_BINDING=${{ secrets.DB_CHANNEL_BINDING }}
+                  SECRET=${{ secrets.SECRET }}
+                  FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+                  AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+                  EOF
 
             - name: Pull Docker images
               run: |
-                docker pull chicken78182/cvwo-backend:latest
-                docker pull chicken78182/cvwo-frontend:latest
+                  docker pull chicken78182/cvwo-backend:latest
+                  docker pull chicken78182/cvwo-frontend:latest
 
             - name: Stop and remove old containers
               run: docker-compose down || true
@@ -86,5 +88,5 @@ jobs:
 
             - name: Clean up after deployment
               run: |
-                docker image prune -f
-                rm -f .env
+                  docker image prune -f
+                  rm -f .env

@@ -14,7 +14,7 @@ export default function Login() {
 
     // Checking if user is already logged in - if is redirect to posts
     useEffect(() => {
-        if (user) navigate('/posts');
+        if (user) navigate('/');
     }, [user, navigate]);
 
     if (user) return <p>Loading...</p>;
@@ -23,7 +23,7 @@ export default function Login() {
     const handleLogin = async (username: string) => {
         const user = await login({ username });
         dispatch(setUser(user));
-        navigate('/dashtest');
+        navigate('/');
     };
 
     return (
