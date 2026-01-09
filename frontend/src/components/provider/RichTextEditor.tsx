@@ -4,24 +4,28 @@ import Link from '@tiptap/extension-link'
 import { Box, Button } from '@mui/material'
 import { useEffect } from 'react'
 
-// Props for content and how the change in content is handled 
 interface RichTextEditorProps {
     content?: string
     onChange: (content: string) => void
 }
 
-// Rich text content editor componenet
 const RichTextEditor = ({ content = '', onChange }: RichTextEditorProps) => {
-    // https://tiptap.dev/docs/editor/getting-started/configure
     const editor = useEditor({
-        extensions: [StarterKit, Link],
+        extensions: [
+            StarterKit,
+            Link.configure({
+                openOnClick: false,
+                HTMLAttributes: {
+                    class: 'text-blue-500 underline',
+                },
+            }),
+        ],
         content,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML()) // get HTML to save to backend
+            onChange(editor.getHTML())
         },
     })
 
-    // If content prop changes from data passed down and not thorugh editor content, we update the new content in the editor 
     useEffect(() => {
         if (editor && content !== editor.getHTML()) {
             editor.commands.setContent(content)
@@ -30,7 +34,6 @@ const RichTextEditor = ({ content = '', onChange }: RichTextEditorProps) => {
 
     if (!editor) return null
 
-    // https://tiptap.dev/docs/examples/basics/formatting Refer to documentation to see how its being done
     return (
         <Box>
             <Box mb={2} display="flex" gap={1}>
@@ -42,7 +45,6 @@ const RichTextEditor = ({ content = '', onChange }: RichTextEditorProps) => {
                     onClick={() => {
                         let url = prompt('Enter URL')
                         if (url) {
-                            // add http protocol , without it it will trail current site path 
                             if (!/^https?:\/\//i.test(url)) {
                                 url = 'https://' + url
                             }
