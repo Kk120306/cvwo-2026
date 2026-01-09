@@ -49,6 +49,28 @@ func (s *VoteService) FindExistingVote(userID, votableID, votableType string) (*
 
 // CreateVote creates a new vote
 func (s *VoteService) CreateVote(userID string, input VoteInput) error {
+
+	switch input.VotableType {
+	case "post":
+		var post models.Post
+		err := database.DB.First(&post, "id = ?", input.VotableID).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("post not found")
+			}
+			return errors.New("database error checking post")
+		}
+	case "comment":
+		var comment models.Comment
+		err := database.DB.First(&comment, "id = ?", input.VotableID).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("comment not found")
+			}
+			return errors.New("database error checking comment")
+		}
+	}
+
 	newVote := models.Vote{
 		UserID:      userID,
 		VotableID:   input.VotableID,

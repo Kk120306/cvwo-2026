@@ -74,7 +74,7 @@ func (s *UserService) GetUserPosts(userID string) ([]models.Post, error) {
 func (s *UserService) GetUserComments(userID string) ([]models.Comment, error) {
 	var comments []models.Comment
 	err := database.DB.
-		Select("id", "post_id", "author_id", "content", "is_pinned", "created_at", "updated_at").
+		Select("id", "post_id", "author_id", "content", "created_at", "updated_at").
 		Where("author_id = ?", userID).
 		Preload("Author").
 		Order("created_at DESC").
