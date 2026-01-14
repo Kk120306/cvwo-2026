@@ -179,6 +179,10 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+### AI Declaration 
+- Used AI to write test componenets that were removed for production
+- Used AI to review my nginx file
+
 ---
 
 ## 📧 Contact
