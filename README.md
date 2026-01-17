@@ -4,7 +4,7 @@
 
 A full-stack forum application built with a Go backend and React frontend. Users can engage in discussions, create posts under various topics, comment, and vote. This is a project for the CVWO 2026 Application.
 
-**🚀 Live Demo:** [http://3.25.177.70/](#)
+**🚀 Live Demo:** http://3.25.177.70/
 
 ---
 
